@@ -28,6 +28,13 @@
     <!-- the robot is symmetric left/right, right legs mirror the left ones, base COM on y = 0 -->
     <xacro:property name="symmetric_left_right" value="true" />
 
+    <!-- track rollers and wheel drive torque limit (see track.xacro) -->
+    <xacro:arg name="roller_n" default="8"/>
+    <xacro:arg name="roller_radius" default="0.008"/>
+    <xacro:arg name="wheel_effort" default="10.0"/>
+    <xacro:arg name="roller_friction" default="0.0"/>
+    <xacro:arg name="wheel_mu" default="0.5"/>
+
     <!-- Vi consiglio di creare xacro con i track e lo includete qui -->
     <xacro:include filename="$(find mulinex_description)/urdf/links.xacro" />    
     <xacro:include filename="$(find mulinex_description)/urdf/material.xacro" />

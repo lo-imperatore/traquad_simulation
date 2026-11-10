@@ -13,11 +13,23 @@
 
   <!-- Wheel/roller contact. Isotropic friction (Isaac Sim default 0.5), lateral compliance
        comes from passive rollers on the ground wheels: roller_damping tunes lateral resistance -->
-  <xacro:property name="wheel_mu" value="0.5"/>
-  <xacro:property name="roller_n" value="8"/>
-  <xacro:property name="roller_radius" value="0.008"/>
-  <xacro:property name="roller_ring_radius" value="0.007"/>
-  <xacro:property name="roller_mass" value="${0.005 * track_mass_scale}"/>
+  <!-- wheel/roller - ground friction (DART uses the lower mu of the two surfaces). IsaacLab locomotion: terrain
+       mu 1.0 with "multiply", robot mu randomized 0.4-1.1 (ground_friction event), so the training mean is ~0.75 -->
+  <xacro:property name="wheel_mu" value="${float($(arg wheel_mu))}"/>
+  <!-- roller_n / roller_radius / wheel_effort are xacro args of traquad.xacro (IsaacLab policies are trained
+       with 3 rollers of 14 mm and a 0.694 N m wheel drive: see gz_traquad_policy.launch.py).
+       The roller centre moves so that the roller reaches the wheel radius (15 mm); the rollers of a wheel
+       weigh the same whatever their number (as in flatten_traquad_usd.py) -->
+  <xacro:property name="wheel_radius" value="0.015"/>
+  <xacro:property name="roller_n" value="${int($(arg roller_n))}"/>
+  <xacro:property name="roller_radius" value="${float($(arg roller_radius))}"/>
+  <xacro:property name="roller_ring_radius" value="${wheel_radius - roller_radius}"/>
+  <xacro:property name="roller_mass" value="${0.04 * track_mass_scale / roller_n}"/>
+  <!-- dry friction of the roller joints [N m]: in the IsaacLab asset 0.1 for 8 mm rollers, scaled with the radius
+       (0.175 for 14 mm, same lateral break-away force); it sets how easily the tracks slide sideways (skid steering) -->
+  <xacro:property name="roller_friction" value="${float($(arg roller_friction))}"/>
+  <!-- torque limit of the wheel drives: the velocity command of gz_ros2_control is a servo capped at this value -->
+  <xacro:property name="wheel_effort" value="${float($(arg wheel_effort))}"/>
   <xacro:property name="roller_damping" value="1e-4"/>
   <!-- roller rotational inertia (armature-like, larger than the physical 1.3e-7): in DART the
        effective joint damping is capped at about inertia/timestep -->
@@ -80,7 +92,7 @@
       <parent link="${wheel}"/>
       <child link="${wheel}_roller_${k}"/>
       <axis xyz="1 0 0"/>
-      <dynamics damping="${roller_damping}" friction="0.0"/>
+      <dynamics damping="${roller_damping}" friction="${roller_friction}"/>
     </joint>
     <xacro:contact_friction link="${wheel}_roller_${k}"/>
     <xacro:if value="${k + 1 &lt; roller_n}">
@@ -128,7 +140,7 @@
       <parent link="${parent}"/>
       <child link="${name}"/>
       <axis xyz="0 0 1"/>
-      <limit effort="10" velocity="100000"/>
+      <limit effort="${wheel_effort}" velocity="100000"/>
     </joint>
 
     <xacro:if value="${rollers}">

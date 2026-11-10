@@ -1,0 +1,2717 @@
+<sdf version="1.6">
+  <world name="test_indoor_course">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+    <plugin name="rgl::RGLServerPluginManager" filename="RGLServerPluginManager">
+      <do_ignore_entities_in_lidar_link>true</do_ignore_entities_in_lidar_link>
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>1000</range><constant>0.9</constant><linear>0.01</linear><quadratic>0.001</quadratic></attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>200 200</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>200 200</size></plane></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="indoor_course">
+      <static>true</static>
+      <link name="wall_left">
+        <pose>-1.7500 1.3000 1.0000 0.00000 0.00000 0.00000</pose>
+        <collision name="wall_left_collision">
+          <geometry><box><size>4.5000 0.1000 2.0000</size></box></geometry>
+          
+        </collision>
+        <visual name="wall_left_visual">
+          <geometry><box><size>4.5000 0.1000 2.0000</size></box></geometry>
+          <material><ambient>0.92 0.91 0.88 1</ambient><diffuse>0.92 0.91 0.88 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="wall_right">
+        <pose>-1.7500 -1.3000 1.0000 0.00000 0.00000 0.00000</pose>
+        <collision name="wall_right_collision">
+          <geometry><box><size>4.5000 0.1000 2.0000</size></box></geometry>
+          
+        </collision>
+        <visual name="wall_right_visual">
+          <geometry><box><size>4.5000 0.1000 2.0000</size></box></geometry>
+          <material><ambient>0.92 0.91 0.88 1</ambient><diffuse>0.92 0.91 0.88 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="wall_back">
+        <pose>-4.0000 0.0000 1.0000 0.00000 0.00000 0.00000</pose>
+        <collision name="wall_back_collision">
+          <geometry><box><size>0.1000 2.7000 2.0000</size></box></geometry>
+          
+        </collision>
+        <visual name="wall_back_visual">
+          <geometry><box><size>0.1000 2.7000 2.0000</size></box></geometry>
+          <material><ambient>0.92 0.91 0.88 1</ambient><diffuse>0.92 0.91 0.88 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="door_wall_l">
+        <pose>0.5000 0.8750 1.0000 0.00000 0.00000 0.00000</pose>
+        <collision name="door_wall_l_collision">
+          <geometry><box><size>0.1200 0.8500 2.0000</size></box></geometry>
+          
+        </collision>
+        <visual name="door_wall_l_visual">
+          <geometry><box><size>0.1200 0.8500 2.0000</size></box></geometry>
+          <material><ambient>0.92 0.91 0.88 1</ambient><diffuse>0.92 0.91 0.88 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="door_wall_r">
+        <pose>0.5000 -0.8750 1.0000 0.00000 0.00000 0.00000</pose>
+        <collision name="door_wall_r_collision">
+          <geometry><box><size>0.1200 0.8500 2.0000</size></box></geometry>
+          
+        </collision>
+        <visual name="door_wall_r_visual">
+          <geometry><box><size>0.1200 0.8500 2.0000</size></box></geometry>
+          <material><ambient>0.92 0.91 0.88 1</ambient><diffuse>0.92 0.91 0.88 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="door_lintel">
+        <pose>0.5000 0.0000 2.0500 0.00000 0.00000 0.00000</pose>
+        <visual name="door_lintel_visual">
+          <geometry><box><size>0.1200 0.9000 0.1000</size></box></geometry>
+          <material><ambient>0.92 0.91 0.88 1</ambient><diffuse>0.92 0.91 0.88 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="threshold">
+        <pose>0.5000 0.0000 0.0100 0.00000 0.00000 0.00000</pose>
+        <collision name="threshold_collision">
+          <geometry><box><size>0.0800 0.9000 0.0200</size></box></geometry>
+          
+        </collision>
+        <visual name="threshold_visual">
+          <geometry><box><size>0.0800 0.9000 0.0200</size></box></geometry>
+          <material><ambient>0.45 0.47 0.5 1</ambient><diffuse>0.45 0.47 0.5 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="polished_tiles">
+        <pose>2.5000 0.0000 0.0015 0.00000 0.00000 0.00000</pose>
+        <collision name="polished_tiles_collision">
+          <geometry><box><size>2.0000 1.4000 0.0030</size></box></geometry>
+          <surface><friction><ode><mu>0.3</mu><mu2>0.3</mu2></ode></friction></surface>
+        </collision>
+        <visual name="polished_tiles_visual">
+          <geometry><box><size>2.0000 1.4000 0.0030</size></box></geometry>
+          <material><ambient>0.85 0.85 0.8 1</ambient><diffuse>0.85 0.85 0.8 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="cable_top">
+        <pose>4.5000 0.0000 0.0200 0.00000 0.00000 0.00000</pose>
+        <collision name="cable_top_collision">
+          <geometry><box><size>0.1000 1.4000 0.0400</size></box></geometry>
+          
+        </collision>
+        <visual name="cable_top_visual">
+          <geometry><box><size>0.1000 1.4000 0.0400</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="cable_ramp_in">
+        <pose>4.4071 0.0000 0.0160 0.00000 -0.43633 0.00000</pose>
+        <collision name="cable_ramp_in_collision">
+          <geometry><box><size>0.0946 1.4000 0.0120</size></box></geometry>
+          
+        </collision>
+        <visual name="cable_ramp_in_visual">
+          <geometry><box><size>0.0946 1.4000 0.0120</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="cable_ramp_out">
+        <pose>4.5929 0.0000 0.0160 0.00000 0.43633 0.00000</pose>
+        <collision name="cable_ramp_out_collision">
+          <geometry><box><size>0.0946 1.4000 0.0120</size></box></geometry>
+          
+        </collision>
+        <visual name="cable_ramp_out_visual">
+          <geometry><box><size>0.0946 1.4000 0.0120</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="sidewalk">
+        <pose>7.5000 0.0000 0.0300 0.00000 0.00000 0.00000</pose>
+        <collision name="sidewalk_collision">
+          <geometry><box><size>4.0000 2.0000 0.0600</size></box></geometry>
+          
+        </collision>
+        <visual name="sidewalk_visual">
+          <geometry><box><size>4.0000 2.0000 0.0600</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_0">
+        <pose>6.5500 -0.6500 0.0624 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0048</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0048</size></box></geometry>
+          <material><ambient>0.4570766760473523 0.4570766760473523 0.44336437576593174 1</ambient><diffuse>0.4570766760473523 0.4570766760473523 0.44336437576593174 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_1">
+        <pose>6.5500 -0.5500 0.0637 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0074</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0074</size></box></geometry>
+          <material><ambient>0.4666272061753911 0.4666272061753911 0.4526283899901294 1</ambient><diffuse>0.4666272061753911 0.4666272061753911 0.4526283899901294 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_2">
+        <pose>6.5500 -0.4500 0.0663 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0125</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0125</size></box></geometry>
+          <material><ambient>0.3804846174783701 0.3804846174783701 0.369070078954019 1</ambient><diffuse>0.3804846174783701 0.3804846174783701 0.369070078954019 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_4">
+        <pose>6.5500 -0.2500 0.0684 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          <material><ambient>0.41149664229248123 0.41149664229248123 0.39915174302370676 1</ambient><diffuse>0.41149664229248123 0.41149664229248123 0.39915174302370676 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_5">
+        <pose>6.5500 -0.1500 0.0623 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0047</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0047</size></box></geometry>
+          <material><ambient>0.529303173681674 0.529303173681674 0.5134240784712237 1</ambient><diffuse>0.529303173681674 0.529303173681674 0.5134240784712237 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_6">
+        <pose>6.5500 -0.0500 0.0647 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0094</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0094</size></box></geometry>
+          <material><ambient>0.5038338322039022 0.5038338322039022 0.48871881723778515 1</ambient><diffuse>0.5038338322039022 0.5038338322039022 0.48871881723778515 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_7">
+        <pose>6.5500 0.0500 0.0648 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0095</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0095</size></box></geometry>
+          <material><ambient>0.4722509024870659 0.4722509024870659 0.4580833754124539 1</ambient><diffuse>0.4722509024870659 0.4722509024870659 0.4580833754124539 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_8">
+        <pose>6.5500 0.1500 0.0615 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0030</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0030</size></box></geometry>
+          <material><ambient>0.47157770532563015 0.47157770532563015 0.45743037416586124 1</ambient><diffuse>0.47157770532563015 0.47157770532563015 0.45743037416586124 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_9">
+        <pose>6.5500 0.2500 0.0687 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0174</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0174</size></box></geometry>
+          <material><ambient>0.4537089936613282 0.4537089936613282 0.4400977238514884 1</ambient><diffuse>0.4537089936613282 0.4537089936613282 0.4400977238514884 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_10">
+        <pose>6.5500 0.3500 0.0674 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0148</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0148</size></box></geometry>
+          <material><ambient>0.4774258360591348 0.4774258360591348 0.46310306097736076 1</ambient><diffuse>0.4774258360591348 0.4774258360591348 0.46310306097736076 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_0_12">
+        <pose>6.5500 0.5500 0.0676 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_0_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0152</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_0_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0152</size></box></geometry>
+          <material><ambient>0.4645759332690108 0.4645759332690108 0.4506386552709405 1</ambient><diffuse>0.4645759332690108 0.4645759332690108 0.4506386552709405 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_0">
+        <pose>6.6500 -0.6500 0.0630 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          <material><ambient>0.37496188023516 0.37496188023516 0.3637130238281052 1</ambient><diffuse>0.37496188023516 0.37496188023516 0.3637130238281052 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_1">
+        <pose>6.6500 -0.5500 0.0687 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0173</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0173</size></box></geometry>
+          <material><ambient>0.44563985418647467 0.44563985418647467 0.4322706585608804 1</ambient><diffuse>0.44563985418647467 0.44563985418647467 0.4322706585608804 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_2">
+        <pose>6.6500 -0.4500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          <material><ambient>0.5106100480408771 0.5106100480408771 0.49529174659965075 1</ambient><diffuse>0.5106100480408771 0.5106100480408771 0.49529174659965075 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_3">
+        <pose>6.6500 -0.3500 0.0671 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0143</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0143</size></box></geometry>
+          <material><ambient>0.5173757868134199 0.5173757868134199 0.5018545132090173 1</ambient><diffuse>0.5173757868134199 0.5173757868134199 0.5018545132090173 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_4">
+        <pose>6.6500 -0.2500 0.0639 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0079</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0079</size></box></geometry>
+          <material><ambient>0.4981454033576365 0.4981454033576365 0.4832010412569074 1</ambient><diffuse>0.4981454033576365 0.4981454033576365 0.4832010412569074 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_5">
+        <pose>6.6500 -0.1500 0.0644 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0089</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0089</size></box></geometry>
+          <material><ambient>0.5196938754727234 0.5196938754727234 0.5041030592085417 1</ambient><diffuse>0.5196938754727234 0.5196938754727234 0.5041030592085417 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_6">
+        <pose>6.6500 -0.0500 0.0688 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          <material><ambient>0.38559268955694037 0.38559268955694037 0.37402490887023215 1</ambient><diffuse>0.38559268955694037 0.38559268955694037 0.37402490887023215 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_8">
+        <pose>6.6500 0.1500 0.0622 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0043</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0043</size></box></geometry>
+          <material><ambient>0.5244768222237125 0.5244768222237125 0.5087425175570011 1</ambient><diffuse>0.5244768222237125 0.5244768222237125 0.5087425175570011 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_9">
+        <pose>6.6500 0.2500 0.0644 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0087</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0087</size></box></geometry>
+          <material><ambient>0.47026372653868864 0.47026372653868864 0.456155814742528 1</ambient><diffuse>0.47026372653868864 0.47026372653868864 0.456155814742528 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_10">
+        <pose>6.6500 0.3500 0.0630 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          <material><ambient>0.45115887741264954 0.45115887741264954 0.43762411109027005 1</ambient><diffuse>0.45115887741264954 0.45115887741264954 0.43762411109027005 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_11">
+        <pose>6.6500 0.4500 0.0639 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0077</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0077</size></box></geometry>
+          <material><ambient>0.4261456782032288 0.4261456782032288 0.41336130785713193 1</ambient><diffuse>0.4261456782032288 0.4261456782032288 0.41336130785713193 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_1_12">
+        <pose>6.6500 0.5500 0.0659 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_1_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0117</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_1_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0117</size></box></geometry>
+          <material><ambient>0.46348028687523185 0.46348028687523185 0.4495758782689749 1</ambient><diffuse>0.46348028687523185 0.46348028687523185 0.4495758782689749 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_0">
+        <pose>6.7500 -0.6500 0.0690 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0181</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0181</size></box></geometry>
+          <material><ambient>0.4791171418615947 0.4791171418615947 0.46474362760574683 1</ambient><diffuse>0.4791171418615947 0.4791171418615947 0.46474362760574683 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_1">
+        <pose>6.7500 -0.5500 0.0693 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0186</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0186</size></box></geometry>
+          <material><ambient>0.507024090623481 0.507024090623481 0.49181336790477653 1</ambient><diffuse>0.507024090623481 0.507024090623481 0.49181336790477653 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_2">
+        <pose>6.7500 -0.4500 0.0699 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0198</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0198</size></box></geometry>
+          <material><ambient>0.47740376674600293 0.47740376674600293 0.4630816537436228 1</ambient><diffuse>0.47740376674600293 0.47740376674600293 0.4630816537436228 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_3">
+        <pose>6.7500 -0.3500 0.0616 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0033</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0033</size></box></geometry>
+          <material><ambient>0.5077020052986029 0.5077020052986029 0.4924709451396448 1</ambient><diffuse>0.5077020052986029 0.5077020052986029 0.4924709451396448 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_4">
+        <pose>6.7500 -0.2500 0.0696 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0193</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0193</size></box></geometry>
+          <material><ambient>0.5147513575219579 0.5147513575219579 0.4993088167962991 1</ambient><diffuse>0.5147513575219579 0.5147513575219579 0.4993088167962991 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_5">
+        <pose>6.7500 -0.1500 0.0657 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0114</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0114</size></box></geometry>
+          <material><ambient>0.4842107232278719 0.4842107232278719 0.46968440153103574 1</ambient><diffuse>0.4842107232278719 0.4842107232278719 0.46968440153103574 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_6">
+        <pose>6.7500 -0.0500 0.0621 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0042</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0042</size></box></geometry>
+          <material><ambient>0.5030572688437367 0.5030572688437367 0.4879655507784246 1</ambient><diffuse>0.5030572688437367 0.5030572688437367 0.4879655507784246 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_7">
+        <pose>6.7500 0.0500 0.0657 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0115</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0115</size></box></geometry>
+          <material><ambient>0.4155931939177928 0.4155931939177928 0.403125398100259 1</ambient><diffuse>0.4155931939177928 0.4155931939177928 0.403125398100259 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_9">
+        <pose>6.7500 0.2500 0.0685 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0171</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0171</size></box></geometry>
+          <material><ambient>0.528368962387453 0.528368962387453 0.5125178935158294 1</ambient><diffuse>0.528368962387453 0.528368962387453 0.5125178935158294 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_11">
+        <pose>6.7500 0.4500 0.0680 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0160</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0160</size></box></geometry>
+          <material><ambient>0.43567389237534543 0.43567389237534543 0.42260367560408507 1</ambient><diffuse>0.43567389237534543 0.43567389237534543 0.42260367560408507 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_2_12">
+        <pose>6.7500 0.5500 0.0615 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_2_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0030</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_2_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0030</size></box></geometry>
+          <material><ambient>0.41702259949105 0.41702259949105 0.4045119215063185 1</ambient><diffuse>0.41702259949105 0.41702259949105 0.4045119215063185 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_0">
+        <pose>6.8500 -0.6500 0.0677 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0154</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0154</size></box></geometry>
+          <material><ambient>0.5096427239405122 0.5096427239405122 0.4943534422222969 1</ambient><diffuse>0.5096427239405122 0.5096427239405122 0.4943534422222969 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_2">
+        <pose>6.8500 -0.4500 0.0661 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0123</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0123</size></box></geometry>
+          <material><ambient>0.37719043895936577 0.37719043895936577 0.3658747257905848 1</ambient><diffuse>0.37719043895936577 0.37719043895936577 0.3658747257905848 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_3">
+        <pose>6.8500 -0.3500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          <material><ambient>0.4229526633630412 0.4229526633630412 0.41026408346215 1</ambient><diffuse>0.4229526633630412 0.4229526633630412 0.41026408346215 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_4">
+        <pose>6.8500 -0.2500 0.0688 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          <material><ambient>0.5269017210949344 0.5269017210949344 0.5110946694620864 1</ambient><diffuse>0.5269017210949344 0.5269017210949344 0.5110946694620864 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_5">
+        <pose>6.8500 -0.1500 0.0651 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0101</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0101</size></box></geometry>
+          <material><ambient>0.5297614312601242 0.5297614312601242 0.5138685883223205 1</ambient><diffuse>0.5297614312601242 0.5297614312601242 0.5138685883223205 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_6">
+        <pose>6.8500 -0.0500 0.0631 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0062</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0062</size></box></geometry>
+          <material><ambient>0.3823153127528659 0.3823153127528659 0.3708458533702799 1</ambient><diffuse>0.3823153127528659 0.3823153127528659 0.3708458533702799 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_7">
+        <pose>6.8500 0.0500 0.0660 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0120</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0120</size></box></geometry>
+          <material><ambient>0.37502044194805084 0.37502044194805084 0.36376982868960933 1</ambient><diffuse>0.37502044194805084 0.37502044194805084 0.36376982868960933 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_8">
+        <pose>6.8500 0.1500 0.0620 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0039</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0039</size></box></geometry>
+          <material><ambient>0.43526978169871855 0.43526978169871855 0.42221168824775696 1</ambient><diffuse>0.43526978169871855 0.43526978169871855 0.42221168824775696 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_9">
+        <pose>6.8500 0.2500 0.0661 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0122</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0122</size></box></geometry>
+          <material><ambient>0.39499183856217035 0.39499183856217035 0.38314208340530526 1</ambient><diffuse>0.39499183856217035 0.39499183856217035 0.38314208340530526 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_11">
+        <pose>6.8500 0.4500 0.0687 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0174</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0174</size></box></geometry>
+          <material><ambient>0.4202128831865747 0.4202128831865747 0.4076064966909774 1</ambient><diffuse>0.4202128831865747 0.4202128831865747 0.4076064966909774 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_3_12">
+        <pose>6.8500 0.5500 0.0696 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_3_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_3_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          <material><ambient>0.5134655426284163 0.5134655426284163 0.4980615763495638 1</ambient><diffuse>0.5134655426284163 0.5134655426284163 0.4980615763495638 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_0">
+        <pose>6.9500 -0.6500 0.0638 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0076</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0076</size></box></geometry>
+          <material><ambient>0.44366554125534474 0.44366554125534474 0.4303555750176844 1</ambient><diffuse>0.44366554125534474 0.44366554125534474 0.4303555750176844 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_1">
+        <pose>6.9500 -0.5500 0.0652 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0104</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0104</size></box></geometry>
+          <material><ambient>0.47302219494203634 0.47302219494203634 0.4588315290937752 1</ambient><diffuse>0.47302219494203634 0.47302219494203634 0.4588315290937752 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_2">
+        <pose>6.9500 -0.4500 0.0660 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0119</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0119</size></box></geometry>
+          <material><ambient>0.4594817699224625 0.4594817699224625 0.4456973168247886 1</ambient><diffuse>0.4594817699224625 0.4594817699224625 0.4456973168247886 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_3">
+        <pose>6.9500 -0.3500 0.0662 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0124</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0124</size></box></geometry>
+          <material><ambient>0.5204994008678341 0.5204994008678341 0.504884418841799 1</ambient><diffuse>0.5204994008678341 0.5204994008678341 0.504884418841799 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_4">
+        <pose>6.9500 -0.2500 0.0651 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0101</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0101</size></box></geometry>
+          <material><ambient>0.43899064854894926 0.43899064854894926 0.42582092909248076 1</ambient><diffuse>0.43899064854894926 0.43899064854894926 0.42582092909248076 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_5">
+        <pose>6.9500 -0.1500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          <material><ambient>0.4080216991143655 0.4080216991143655 0.3957810481409345 1</ambient><diffuse>0.4080216991143655 0.4080216991143655 0.3957810481409345 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_6">
+        <pose>6.9500 -0.0500 0.0630 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          <material><ambient>0.5264475706317817 0.5264475706317817 0.5106541435128282 1</ambient><diffuse>0.5264475706317817 0.5264475706317817 0.5106541435128282 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_7">
+        <pose>6.9500 0.0500 0.0652 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0104</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0104</size></box></geometry>
+          <material><ambient>0.45774887482989796 0.45774887482989796 0.444016408585001 1</ambient><diffuse>0.45774887482989796 0.45774887482989796 0.444016408585001 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_9">
+        <pose>6.9500 0.2500 0.0642 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0083</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0083</size></box></geometry>
+          <material><ambient>0.4627944342075305 0.4627944342075305 0.4489106011813046 1</ambient><diffuse>0.4627944342075305 0.4627944342075305 0.4489106011813046 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_4_11">
+        <pose>6.9500 0.4500 0.0662 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_4_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0123</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_4_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0123</size></box></geometry>
+          <material><ambient>0.47114888564737845 0.47114888564737845 0.4570144190779571 1</ambient><diffuse>0.47114888564737845 0.47114888564737845 0.4570144190779571 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_0">
+        <pose>7.0500 -0.6500 0.0663 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0125</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0125</size></box></geometry>
+          <material><ambient>0.4446000687514733 0.4446000687514733 0.4312620666889291 1</ambient><diffuse>0.4446000687514733 0.4446000687514733 0.4312620666889291 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_1">
+        <pose>7.0500 -0.5500 0.0668 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0136</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0136</size></box></geometry>
+          <material><ambient>0.4264123172865676 0.4264123172865676 0.41361994776797056 1</ambient><diffuse>0.4264123172865676 0.4264123172865676 0.41361994776797056 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_2">
+        <pose>7.0500 -0.4500 0.0671 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          <material><ambient>0.4880854862803255 0.4880854862803255 0.4734429216919157 1</ambient><diffuse>0.4880854862803255 0.4880854862803255 0.4734429216919157 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_5">
+        <pose>7.0500 -0.1500 0.0668 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0135</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0135</size></box></geometry>
+          <material><ambient>0.5241288928618012 0.5241288928618012 0.5084050260759472 1</ambient><diffuse>0.5241288928618012 0.5241288928618012 0.5084050260759472 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_6">
+        <pose>7.0500 -0.0500 0.0625 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0050</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0050</size></box></geometry>
+          <material><ambient>0.4430099407418207 0.4430099407418207 0.42971964251956607 1</ambient><diffuse>0.4430099407418207 0.4430099407418207 0.42971964251956607 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_7">
+        <pose>7.0500 0.0500 0.0659 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0119</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0119</size></box></geometry>
+          <material><ambient>0.42120406171968106 0.42120406171968106 0.4085679398680906 1</ambient><diffuse>0.42120406171968106 0.42120406171968106 0.4085679398680906 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_8">
+        <pose>7.0500 0.1500 0.0636 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0073</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0073</size></box></geometry>
+          <material><ambient>0.4200273057915057 0.4200273057915057 0.40742648661776054 1</ambient><diffuse>0.4200273057915057 0.4200273057915057 0.40742648661776054 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_9">
+        <pose>7.0500 0.2500 0.0637 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0074</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0074</size></box></geometry>
+          <material><ambient>0.4652994409372059 0.4652994409372059 0.4513404577090897 1</ambient><diffuse>0.4652994409372059 0.4652994409372059 0.4513404577090897 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_10">
+        <pose>7.0500 0.3500 0.0630 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          <material><ambient>0.4303456546126267 0.4303456546126267 0.41743528497424787 1</ambient><diffuse>0.4303456546126267 0.4303456546126267 0.41743528497424787 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_11">
+        <pose>7.0500 0.4500 0.0677 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0154</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0154</size></box></geometry>
+          <material><ambient>0.37430739280149283 0.37430739280149283 0.36307817101744805 1</ambient><diffuse>0.37430739280149283 0.37430739280149283 0.36307817101744805 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_5_12">
+        <pose>7.0500 0.5500 0.0657 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_5_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0114</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_5_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0114</size></box></geometry>
+          <material><ambient>0.48762770906856157 0.48762770906856157 0.4729988777965047 1</ambient><diffuse>0.48762770906856157 0.48762770906856157 0.4729988777965047 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_0">
+        <pose>7.1500 -0.6500 0.0631 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0062</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0062</size></box></geometry>
+          <material><ambient>0.4056060548469106 0.4056060548469106 0.39343787320150325 1</ambient><diffuse>0.4056060548469106 0.4056060548469106 0.39343787320150325 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_1">
+        <pose>7.1500 -0.5500 0.0680 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          <material><ambient>0.40819122830365473 0.40819122830365473 0.39594549145454505 1</ambient><diffuse>0.40819122830365473 0.40819122830365473 0.39594549145454505 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_2">
+        <pose>7.1500 -0.4500 0.0619 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0037</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0037</size></box></geometry>
+          <material><ambient>0.43963749128525137 0.43963749128525137 0.4264483665466938 1</ambient><diffuse>0.43963749128525137 0.43963749128525137 0.4264483665466938 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_3">
+        <pose>7.1500 -0.3500 0.0670 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0140</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0140</size></box></geometry>
+          <material><ambient>0.3862946708210995 0.3862946708210995 0.37470583069646646 1</ambient><diffuse>0.3862946708210995 0.3862946708210995 0.37470583069646646 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_4">
+        <pose>7.1500 -0.2500 0.0632 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0064</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0064</size></box></geometry>
+          <material><ambient>0.42340058407178804 0.42340058407178804 0.4106985665496344 1</ambient><diffuse>0.42340058407178804 0.42340058407178804 0.4106985665496344 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_5">
+        <pose>7.1500 -0.1500 0.0683 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          <material><ambient>0.4401489172098219 0.4401489172098219 0.42694444969352724 1</ambient><diffuse>0.4401489172098219 0.4401489172098219 0.42694444969352724 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_6">
+        <pose>7.1500 -0.0500 0.0686 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0171</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0171</size></box></geometry>
+          <material><ambient>0.3970854772090296 0.3970854772090296 0.3851729128927587 1</ambient><diffuse>0.3970854772090296 0.3970854772090296 0.3851729128927587 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_7">
+        <pose>7.1500 0.0500 0.0634 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0067</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0067</size></box></geometry>
+          <material><ambient>0.4740371802067992 0.4740371802067992 0.4598160648005952 1</ambient><diffuse>0.4740371802067992 0.4740371802067992 0.4598160648005952 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_8">
+        <pose>7.1500 0.1500 0.0688 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0177</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0177</size></box></geometry>
+          <material><ambient>0.4421763494856356 0.4421763494856356 0.4289110590010665 1</ambient><diffuse>0.4421763494856356 0.4421763494856356 0.4289110590010665 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_9">
+        <pose>7.1500 0.2500 0.0623 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0045</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0045</size></box></geometry>
+          <material><ambient>0.3893470919536458 0.3893470919536458 0.37766667919503644 1</ambient><diffuse>0.3893470919536458 0.3893470919536458 0.37766667919503644 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_10">
+        <pose>7.1500 0.3500 0.0653 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0106</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0106</size></box></geometry>
+          <material><ambient>0.40052860893623937 0.40052860893623937 0.38851275066815216 1</ambient><diffuse>0.40052860893623937 0.40052860893623937 0.38851275066815216 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_11">
+        <pose>7.1500 0.4500 0.0681 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          <material><ambient>0.5041562206445162 0.5041562206445162 0.4890315340251806 1</ambient><diffuse>0.5041562206445162 0.5041562206445162 0.4890315340251806 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_6_12">
+        <pose>7.1500 0.5500 0.0618 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_6_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0037</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_6_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0037</size></box></geometry>
+          <material><ambient>0.41457474272264205 0.41457474272264205 0.4021375004409628 1</ambient><diffuse>0.41457474272264205 0.41457474272264205 0.4021375004409628 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_0">
+        <pose>7.2500 -0.6500 0.0681 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          <material><ambient>0.4727099610394645 0.4727099610394645 0.45852866220828054 1</ambient><diffuse>0.4727099610394645 0.4727099610394645 0.45852866220828054 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_1">
+        <pose>7.2500 -0.5500 0.0681 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          <material><ambient>0.42524524878201575 0.42524524878201575 0.4124878913185553 1</ambient><diffuse>0.42524524878201575 0.42524524878201575 0.4124878913185553 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_3">
+        <pose>7.2500 -0.3500 0.0629 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0058</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0058</size></box></geometry>
+          <material><ambient>0.49701790791746636 0.49701790791746636 0.48210737067994236 1</ambient><diffuse>0.49701790791746636 0.49701790791746636 0.48210737067994236 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_4">
+        <pose>7.2500 -0.2500 0.0627 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0054</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0054</size></box></geometry>
+          <material><ambient>0.4254166849066966 0.4254166849066966 0.4126541843594957 1</ambient><diffuse>0.4254166849066966 0.4254166849066966 0.4126541843594957 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_5">
+        <pose>7.2500 -0.1500 0.0642 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0083</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0083</size></box></geometry>
+          <material><ambient>0.4371633894066003 0.4371633894066003 0.4240484877244023 1</ambient><diffuse>0.4371633894066003 0.4371633894066003 0.4240484877244023 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_6">
+        <pose>7.2500 -0.0500 0.0641 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0082</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0082</size></box></geometry>
+          <material><ambient>0.517297981278021 0.517297981278021 0.5017790418396804 1</ambient><diffuse>0.517297981278021 0.517297981278021 0.5017790418396804 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_7">
+        <pose>7.2500 0.0500 0.0616 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0031</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0031</size></box></geometry>
+          <material><ambient>0.3707458871333033 0.3707458871333033 0.3596235105193042 1</ambient><diffuse>0.3707458871333033 0.3707458871333033 0.3596235105193042 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_8">
+        <pose>7.2500 0.1500 0.0694 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0189</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0189</size></box></geometry>
+          <material><ambient>0.5107965202601678 0.5107965202601678 0.4954726246523627 1</ambient><diffuse>0.5107965202601678 0.5107965202601678 0.4954726246523627 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_9">
+        <pose>7.2500 0.2500 0.0699 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0197</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0197</size></box></geometry>
+          <material><ambient>0.43949637002810416 0.43949637002810416 0.426311478927261 1</ambient><diffuse>0.43949637002810416 0.43949637002810416 0.426311478927261 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_10">
+        <pose>7.2500 0.3500 0.0695 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0190</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0190</size></box></geometry>
+          <material><ambient>0.5183803543058142 0.5183803543058142 0.5028289436766398 1</ambient><diffuse>0.5183803543058142 0.5183803543058142 0.5028289436766398 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_11">
+        <pose>7.2500 0.4500 0.0622 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0044</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0044</size></box></geometry>
+          <material><ambient>0.48928368146022705 0.48928368146022705 0.47460517101642025 1</ambient><diffuse>0.48928368146022705 0.48928368146022705 0.47460517101642025 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_7_12">
+        <pose>7.2500 0.5500 0.0684 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_7_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_7_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          <material><ambient>0.4760779520845585 0.4760779520845585 0.46179561352202175 1</ambient><diffuse>0.4760779520845585 0.4760779520845585 0.46179561352202175 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_0">
+        <pose>7.3500 -0.6500 0.0652 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0104</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0104</size></box></geometry>
+          <material><ambient>0.4162466937826408 0.4162466937826408 0.4037592929691616 1</ambient><diffuse>0.4162466937826408 0.4162466937826408 0.4037592929691616 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_1">
+        <pose>7.3500 -0.5500 0.0634 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0068</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0068</size></box></geometry>
+          <material><ambient>0.4063946138161792 0.4063946138161792 0.3942027754016938 1</ambient><diffuse>0.4063946138161792 0.4063946138161792 0.3942027754016938 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_3">
+        <pose>7.3500 -0.3500 0.0659 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0118</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0118</size></box></geometry>
+          <material><ambient>0.415921788358684 0.415921788358684 0.40344413470792345 1</ambient><diffuse>0.415921788358684 0.415921788358684 0.40344413470792345 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_4">
+        <pose>7.3500 -0.2500 0.0681 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0162</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0162</size></box></geometry>
+          <material><ambient>0.3772122896136576 0.3772122896136576 0.36589592092524786 1</ambient><diffuse>0.3772122896136576 0.3772122896136576 0.36589592092524786 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_5">
+        <pose>7.3500 -0.1500 0.0690 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0181</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0181</size></box></geometry>
+          <material><ambient>0.4809928971675608 0.4809928971675608 0.46656311025253394 1</ambient><diffuse>0.4809928971675608 0.4809928971675608 0.46656311025253394 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_6">
+        <pose>7.3500 -0.0500 0.0692 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0185</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0185</size></box></geometry>
+          <material><ambient>0.5134507463974478 0.5134507463974478 0.49804722400552437 1</ambient><diffuse>0.5134507463974478 0.5134507463974478 0.49804722400552437 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_7">
+        <pose>7.3500 0.0500 0.0690 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0180</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0180</size></box></geometry>
+          <material><ambient>0.4623125446431122 0.4623125446431122 0.44844316830381886 1</ambient><diffuse>0.4623125446431122 0.4623125446431122 0.44844316830381886 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_9">
+        <pose>7.3500 0.2500 0.0675 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0149</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0149</size></box></geometry>
+          <material><ambient>0.39749145448587797 0.39749145448587797 0.3855667108513016 1</ambient><diffuse>0.39749145448587797 0.39749145448587797 0.3855667108513016 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_10">
+        <pose>7.3500 0.3500 0.0630 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0060</size></box></geometry>
+          <material><ambient>0.4760633766887725 0.4760633766887725 0.4617814753881093 1</ambient><diffuse>0.4760633766887725 0.4760633766887725 0.4617814753881093 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_11">
+        <pose>7.3500 0.4500 0.0652 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0105</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0105</size></box></geometry>
+          <material><ambient>0.43620007163673236 0.43620007163673236 0.42311406948763036 1</ambient><diffuse>0.43620007163673236 0.43620007163673236 0.42311406948763036 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_8_12">
+        <pose>7.3500 0.5500 0.0694 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_8_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0188</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_8_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0188</size></box></geometry>
+          <material><ambient>0.467946225540146 0.467946225540146 0.4539078387739416 1</ambient><diffuse>0.467946225540146 0.467946225540146 0.4539078387739416 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_0">
+        <pose>7.4500 -0.6500 0.0634 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0068</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0068</size></box></geometry>
+          <material><ambient>0.41039597507952497 0.41039597507952497 0.3980840958271392 1</ambient><diffuse>0.41039597507952497 0.41039597507952497 0.3980840958271392 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_1">
+        <pose>7.4500 -0.5500 0.0686 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0172</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0172</size></box></geometry>
+          <material><ambient>0.4463515994686501 0.4463515994686501 0.4329610514845906 1</ambient><diffuse>0.4463515994686501 0.4463515994686501 0.4329610514845906 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_2">
+        <pose>7.4500 -0.4500 0.0678 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0156</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0156</size></box></geometry>
+          <material><ambient>0.42629466083145523 0.42629466083145523 0.41350582100651156 1</ambient><diffuse>0.42629466083145523 0.42629466083145523 0.41350582100651156 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_3">
+        <pose>7.4500 -0.3500 0.0620 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0039</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0039</size></box></geometry>
+          <material><ambient>0.4555419264884443 0.4555419264884443 0.44187566869379097 1</ambient><diffuse>0.4555419264884443 0.4555419264884443 0.44187566869379097 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_4">
+        <pose>7.4500 -0.2500 0.0682 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0163</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0163</size></box></geometry>
+          <material><ambient>0.39740836172039107 0.39740836172039107 0.3854861108687793 1</ambient><diffuse>0.39740836172039107 0.39740836172039107 0.3854861108687793 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_5">
+        <pose>7.4500 -0.1500 0.0679 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0158</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0158</size></box></geometry>
+          <material><ambient>0.5174826418037811 0.5174826418037811 0.5019581625496676 1</ambient><diffuse>0.5174826418037811 0.5174826418037811 0.5019581625496676 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_6">
+        <pose>7.4500 -0.0500 0.0681 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0161</size></box></geometry>
+          <material><ambient>0.501759802008573 0.501759802008573 0.48670700794831573 1</ambient><diffuse>0.501759802008573 0.501759802008573 0.48670700794831573 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_8">
+        <pose>7.4500 0.1500 0.0663 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0126</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0126</size></box></geometry>
+          <material><ambient>0.5080087308886976 0.5080087308886976 0.49276846896203663 1</ambient><diffuse>0.5080087308886976 0.5080087308886976 0.49276846896203663 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_10">
+        <pose>7.4500 0.3500 0.0627 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0054</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0054</size></box></geometry>
+          <material><ambient>0.41297377779256 0.41297377779256 0.4005845644587832 1</ambient><diffuse>0.41297377779256 0.41297377779256 0.4005845644587832 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_11">
+        <pose>7.4500 0.4500 0.0653 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0105</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0105</size></box></geometry>
+          <material><ambient>0.43767744070407494 0.43767744070407494 0.42454711748295265 1</ambient><diffuse>0.43767744070407494 0.43767744070407494 0.42454711748295265 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_9_12">
+        <pose>7.4500 0.5500 0.0647 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_9_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0095</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_9_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0095</size></box></geometry>
+          <material><ambient>0.4942396257156444 0.4942396257156444 0.47941243694417507 1</ambient><diffuse>0.4942396257156444 0.4942396257156444 0.47941243694417507 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_10_5">
+        <pose>7.5500 -0.1500 0.0697 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_10_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0195</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_10_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0195</size></box></geometry>
+          <material><ambient>0.5067118295582762 0.5067118295582762 0.4915104746715279 1</ambient><diffuse>0.5067118295582762 0.5067118295582762 0.4915104746715279 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_10_7">
+        <pose>7.5500 0.0500 0.0650 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_10_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0100</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_10_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0100</size></box></geometry>
+          <material><ambient>0.420543399044325 0.420543399044325 0.40792709707299524 1</ambient><diffuse>0.420543399044325 0.420543399044325 0.40792709707299524 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_10_8">
+        <pose>7.5500 0.1500 0.0631 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_10_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0063</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_10_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0063</size></box></geometry>
+          <material><ambient>0.42620632932877195 0.42620632932877195 0.41342013944890876 1</ambient><diffuse>0.42620632932877195 0.42620632932877195 0.41342013944890876 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_10_9">
+        <pose>7.5500 0.2500 0.0665 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_10_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_10_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          <material><ambient>0.46385809934630184 0.46385809934630184 0.4499423563659128 1</ambient><diffuse>0.46385809934630184 0.46385809934630184 0.4499423563659128 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_10_10">
+        <pose>7.5500 0.3500 0.0636 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_10_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0072</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_10_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0072</size></box></geometry>
+          <material><ambient>0.4005731201029095 0.4005731201029095 0.38855592649982224 1</ambient><diffuse>0.4005731201029095 0.4005731201029095 0.38855592649982224 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_10_11">
+        <pose>7.5500 0.4500 0.0633 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_10_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0066</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_10_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0066</size></box></geometry>
+          <material><ambient>0.38980080381346954 0.38980080381346954 0.3781067796990654 1</ambient><diffuse>0.38980080381346954 0.38980080381346954 0.3781067796990654 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_10_12">
+        <pose>7.5500 0.5500 0.0656 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_10_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0111</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_10_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0111</size></box></geometry>
+          <material><ambient>0.4845668515241617 0.4845668515241617 0.47002984597843683 1</ambient><diffuse>0.4845668515241617 0.4845668515241617 0.47002984597843683 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_0">
+        <pose>7.6500 -0.6500 0.0638 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0076</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0076</size></box></geometry>
+          <material><ambient>0.38278419681398174 0.38278419681398174 0.37130067090956226 1</ambient><diffuse>0.38278419681398174 0.38278419681398174 0.37130067090956226 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_1">
+        <pose>7.6500 -0.5500 0.0618 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0036</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0036</size></box></geometry>
+          <material><ambient>0.4297239321003173 0.4297239321003173 0.41683221413730775 1</ambient><diffuse>0.4297239321003173 0.4297239321003173 0.41683221413730775 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_2">
+        <pose>7.6500 -0.4500 0.0660 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0121</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0121</size></box></geometry>
+          <material><ambient>0.4952194935576006 0.4952194935576006 0.48036290875087256 1</ambient><diffuse>0.4952194935576006 0.4952194935576006 0.48036290875087256 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_3">
+        <pose>7.6500 -0.3500 0.0638 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0076</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0076</size></box></geometry>
+          <material><ambient>0.4981857455294601 0.4981857455294601 0.48324017316357626 1</ambient><diffuse>0.4981857455294601 0.4981857455294601 0.48324017316357626 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_4">
+        <pose>7.6500 -0.2500 0.0662 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0125</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0125</size></box></geometry>
+          <material><ambient>0.4390549755729017 0.4390549755729017 0.4258833263057146 1</ambient><diffuse>0.4390549755729017 0.4390549755729017 0.4258833263057146 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_5">
+        <pose>7.6500 -0.1500 0.0637 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0074</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0074</size></box></geometry>
+          <material><ambient>0.44938425631528334 0.44938425631528334 0.4359027286258248 1</ambient><diffuse>0.44938425631528334 0.44938425631528334 0.4359027286258248 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_6">
+        <pose>7.6500 -0.0500 0.0670 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          <material><ambient>0.43728222364221697 0.43728222364221697 0.42416375693295044 1</ambient><diffuse>0.43728222364221697 0.43728222364221697 0.42416375693295044 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_7">
+        <pose>7.6500 0.0500 0.0669 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0139</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0139</size></box></geometry>
+          <material><ambient>0.4437343859886231 0.4437343859886231 0.43042235440896437 1</ambient><diffuse>0.4437343859886231 0.4437343859886231 0.43042235440896437 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_8">
+        <pose>7.6500 0.1500 0.0625 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0049</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0049</size></box></geometry>
+          <material><ambient>0.45573398145448063 0.45573398145448063 0.4420619620108462 1</ambient><diffuse>0.45573398145448063 0.45573398145448063 0.4420619620108462 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_9">
+        <pose>7.6500 0.2500 0.0670 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0139</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0139</size></box></geometry>
+          <material><ambient>0.38145295954124614 0.38145295954124614 0.3700093707550087 1</ambient><diffuse>0.38145295954124614 0.38145295954124614 0.3700093707550087 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_10">
+        <pose>7.6500 0.3500 0.0642 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0085</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0085</size></box></geometry>
+          <material><ambient>0.43813680902763114 0.43813680902763114 0.4249927047568022 1</ambient><diffuse>0.43813680902763114 0.43813680902763114 0.4249927047568022 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_11">
+        <pose>7.6500 0.4500 0.0688 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          <material><ambient>0.5198374513692438 0.5198374513692438 0.5042423278281665 1</ambient><diffuse>0.5198374513692438 0.5198374513692438 0.5042423278281665 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_11_12">
+        <pose>7.6500 0.5500 0.0637 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_11_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0075</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_11_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0075</size></box></geometry>
+          <material><ambient>0.5136566717136802 0.5136566717136802 0.4982469715622698 1</ambient><diffuse>0.5136566717136802 0.5136566717136802 0.4982469715622698 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_0">
+        <pose>7.7500 -0.6500 0.0679 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0158</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0158</size></box></geometry>
+          <material><ambient>0.4119487561243188 0.4119487561243188 0.3995902934405892 1</ambient><diffuse>0.4119487561243188 0.4119487561243188 0.3995902934405892 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_1">
+        <pose>7.7500 -0.5500 0.0646 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0093</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0093</size></box></geometry>
+          <material><ambient>0.38970336787588833 0.38970336787588833 0.37801226683961164 1</ambient><diffuse>0.38970336787588833 0.38970336787588833 0.37801226683961164 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_2">
+        <pose>7.7500 -0.4500 0.0681 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0163</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0163</size></box></geometry>
+          <material><ambient>0.4759663365480802 0.4759663365480802 0.4616873464516378 1</ambient><diffuse>0.4759663365480802 0.4759663365480802 0.4616873464516378 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_3">
+        <pose>7.7500 -0.3500 0.0689 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0177</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0177</size></box></geometry>
+          <material><ambient>0.49679510161451046 0.49679510161451046 0.4818912485660751 1</ambient><diffuse>0.49679510161451046 0.49679510161451046 0.4818912485660751 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_4">
+        <pose>7.7500 -0.2500 0.0667 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0134</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0134</size></box></geometry>
+          <material><ambient>0.48739762821005583 0.48739762821005583 0.47277569936375413 1</ambient><diffuse>0.48739762821005583 0.48739762821005583 0.47277569936375413 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_5">
+        <pose>7.7500 -0.1500 0.0656 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0113</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0113</size></box></geometry>
+          <material><ambient>0.3865013191838512 0.3865013191838512 0.37490627960833567 1</ambient><diffuse>0.3865013191838512 0.3865013191838512 0.37490627960833567 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_6">
+        <pose>7.7500 -0.0500 0.0659 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0118</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0118</size></box></geometry>
+          <material><ambient>0.3707842045707078 0.3707842045707078 0.35966067843358657 1</ambient><diffuse>0.3707842045707078 0.3707842045707078 0.35966067843358657 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_8">
+        <pose>7.7500 0.1500 0.0677 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0155</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0155</size></box></geometry>
+          <material><ambient>0.37709005776310733 0.37709005776310733 0.3657773560302141 1</ambient><diffuse>0.37709005776310733 0.37709005776310733 0.3657773560302141 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_12_11">
+        <pose>7.7500 0.4500 0.0688 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_12_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_12_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0176</size></box></geometry>
+          <material><ambient>0.39866457679205713 0.39866457679205713 0.3867046394882954 1</ambient><diffuse>0.39866457679205713 0.39866457679205713 0.3867046394882954 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_0">
+        <pose>7.8500 -0.6500 0.0684 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0168</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0168</size></box></geometry>
+          <material><ambient>0.3894053554838508 0.3894053554838508 0.37772319481933525 1</ambient><diffuse>0.3894053554838508 0.3894053554838508 0.37772319481933525 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_1">
+        <pose>7.8500 -0.5500 0.0684 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0169</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0169</size></box></geometry>
+          <material><ambient>0.477765563108827 0.477765563108827 0.4634325962155622 1</ambient><diffuse>0.477765563108827 0.477765563108827 0.4634325962155622 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_2">
+        <pose>7.8500 -0.4500 0.0684 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          <material><ambient>0.5223858109527765 0.5223858109527765 0.5067142366241931 1</ambient><diffuse>0.5223858109527765 0.5223858109527765 0.5067142366241931 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_3">
+        <pose>7.8500 -0.3500 0.0658 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0116</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0116</size></box></geometry>
+          <material><ambient>0.49779955993745945 0.49779955993745945 0.48286557313933565 1</ambient><diffuse>0.49779955993745945 0.49779955993745945 0.48286557313933565 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_5">
+        <pose>7.8500 -0.1500 0.0677 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0153</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0153</size></box></geometry>
+          <material><ambient>0.4518121189224802 0.4518121189224802 0.43825775535480577 1</ambient><diffuse>0.4518121189224802 0.4518121189224802 0.43825775535480577 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_6">
+        <pose>7.8500 -0.0500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0143</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0143</size></box></geometry>
+          <material><ambient>0.38707899159724996 0.38707899159724996 0.37546662184933244 1</ambient><diffuse>0.38707899159724996 0.38707899159724996 0.37546662184933244 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_7">
+        <pose>7.8500 0.0500 0.0675 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0150</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0150</size></box></geometry>
+          <material><ambient>0.5195299751202102 0.5195299751202102 0.5039440758666038 1</ambient><diffuse>0.5195299751202102 0.5195299751202102 0.5039440758666038 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_9">
+        <pose>7.8500 0.2500 0.0632 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0065</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0065</size></box></geometry>
+          <material><ambient>0.4602363755469587 0.4602363755469587 0.4464292842805499 1</ambient><diffuse>0.4602363755469587 0.4602363755469587 0.4464292842805499 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_10">
+        <pose>7.8500 0.3500 0.0683 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0166</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0166</size></box></geometry>
+          <material><ambient>0.4087401700000163 0.4087401700000163 0.3964779649000158 1</ambient><diffuse>0.4087401700000163 0.4087401700000163 0.3964779649000158 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_11">
+        <pose>7.8500 0.4500 0.0618 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0036</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0036</size></box></geometry>
+          <material><ambient>0.40999457294242514 0.40999457294242514 0.3976947357541524 1</ambient><diffuse>0.40999457294242514 0.40999457294242514 0.3976947357541524 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_13_12">
+        <pose>7.8500 0.5500 0.0662 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_13_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0123</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_13_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0123</size></box></geometry>
+          <material><ambient>0.4905669295103832 0.4905669295103832 0.4758499216250717 1</ambient><diffuse>0.4905669295103832 0.4905669295103832 0.4758499216250717 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_0">
+        <pose>7.9500 -0.6500 0.0639 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0079</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0079</size></box></geometry>
+          <material><ambient>0.42879541587764447 0.42879541587764447 0.4159315534013151 1</ambient><diffuse>0.42879541587764447 0.42879541587764447 0.4159315534013151 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_1">
+        <pose>7.9500 -0.5500 0.0640 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0079</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0079</size></box></geometry>
+          <material><ambient>0.4260455173929199 0.4260455173929199 0.4132641518711323 1</ambient><diffuse>0.4260455173929199 0.4260455173929199 0.4132641518711323 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_2">
+        <pose>7.9500 -0.4500 0.0642 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0084</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0084</size></box></geometry>
+          <material><ambient>0.3833216778937871 0.3833216778937871 0.3718220275569735 1</ambient><diffuse>0.3833216778937871 0.3833216778937871 0.3718220275569735 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_3">
+        <pose>7.9500 -0.3500 0.0650 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0100</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0100</size></box></geometry>
+          <material><ambient>0.5256890331858272 0.5256890331858272 0.5099183621902523 1</ambient><diffuse>0.5256890331858272 0.5256890331858272 0.5099183621902523 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_4">
+        <pose>7.9500 -0.2500 0.0641 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0083</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0083</size></box></geometry>
+          <material><ambient>0.4895854401196137 0.4895854401196137 0.47489787691602525 1</ambient><diffuse>0.4895854401196137 0.4895854401196137 0.47489787691602525 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_5">
+        <pose>7.9500 -0.1500 0.0616 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0032</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0032</size></box></geometry>
+          <material><ambient>0.48053409763384447 0.48053409763384447 0.46611807470482913 1</ambient><diffuse>0.48053409763384447 0.48053409763384447 0.46611807470482913 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_6">
+        <pose>7.9500 -0.0500 0.0676 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0151</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0151</size></box></geometry>
+          <material><ambient>0.4778169297265197 0.4778169297265197 0.4634824218347241 1</ambient><diffuse>0.4778169297265197 0.4778169297265197 0.4634824218347241 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_7">
+        <pose>7.9500 0.0500 0.0652 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0103</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0103</size></box></geometry>
+          <material><ambient>0.44739534277459936 0.44739534277459936 0.43397348249136136 1</ambient><diffuse>0.44739534277459936 0.44739534277459936 0.43397348249136136 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_8">
+        <pose>7.9500 0.1500 0.0664 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          <material><ambient>0.5135842071623268 0.5135842071623268 0.498176680947457 1</ambient><diffuse>0.5135842071623268 0.5135842071623268 0.498176680947457 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_11">
+        <pose>7.9500 0.4500 0.0675 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0150</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0150</size></box></geometry>
+          <material><ambient>0.5166583009942042 0.5166583009942042 0.5011585519643781 1</ambient><diffuse>0.5166583009942042 0.5166583009942042 0.5011585519643781 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_14_12">
+        <pose>7.9500 0.5500 0.0652 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_14_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0103</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_14_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0103</size></box></geometry>
+          <material><ambient>0.4408885640936711 0.4408885640936711 0.42766190717086094 1</ambient><diffuse>0.4408885640936711 0.4408885640936711 0.42766190717086094 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_0">
+        <pose>8.0500 -0.6500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          <material><ambient>0.399777765436512 0.399777765436512 0.38778443247341665 1</ambient><diffuse>0.399777765436512 0.399777765436512 0.38778443247341665 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_1">
+        <pose>8.0500 -0.5500 0.0627 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0053</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0053</size></box></geometry>
+          <material><ambient>0.40186877387351416 0.40186877387351416 0.3898127106573087 1</ambient><diffuse>0.40186877387351416 0.40186877387351416 0.3898127106573087 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_2">
+        <pose>8.0500 -0.4500 0.0659 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0117</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0117</size></box></geometry>
+          <material><ambient>0.42037560455177925 0.42037560455177925 0.40776433641522586 1</ambient><diffuse>0.42037560455177925 0.42037560455177925 0.40776433641522586 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_3">
+        <pose>8.0500 -0.3500 0.0623 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0046</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0046</size></box></geometry>
+          <material><ambient>0.48058118526701266 0.48058118526701266 0.46616374970900226 1</ambient><diffuse>0.48058118526701266 0.48058118526701266 0.46616374970900226 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_4">
+        <pose>8.0500 -0.2500 0.0695 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0191</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0191</size></box></geometry>
+          <material><ambient>0.4173381813423455 0.4173381813423455 0.40481803590207516 1</ambient><diffuse>0.4173381813423455 0.4173381813423455 0.40481803590207516 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_5">
+        <pose>8.0500 -0.1500 0.0671 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          <material><ambient>0.43611210894015434 0.43611210894015434 0.4230287456719497 1</ambient><diffuse>0.43611210894015434 0.43611210894015434 0.4230287456719497 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_6">
+        <pose>8.0500 -0.0500 0.0685 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0171</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0171</size></box></geometry>
+          <material><ambient>0.4635437297627379 0.4635437297627379 0.4496374178698557 1</ambient><diffuse>0.4635437297627379 0.4635437297627379 0.4496374178698557 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_7">
+        <pose>8.0500 0.0500 0.0627 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0053</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0053</size></box></geometry>
+          <material><ambient>0.40481678045657554 0.40481678045657554 0.39267227704287827 1</ambient><diffuse>0.40481678045657554 0.40481678045657554 0.39267227704287827 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_9">
+        <pose>8.0500 0.2500 0.0648 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0096</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0096</size></box></geometry>
+          <material><ambient>0.43124001646116283 0.43124001646116283 0.41830281596732793 1</ambient><diffuse>0.43124001646116283 0.43124001646116283 0.41830281596732793 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_10">
+        <pose>8.0500 0.3500 0.0617 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0034</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0034</size></box></geometry>
+          <material><ambient>0.42767525701382797 0.42767525701382797 0.4148449993034131 1</ambient><diffuse>0.42767525701382797 0.42767525701382797 0.4148449993034131 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_15_11">
+        <pose>8.0500 0.4500 0.0632 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_15_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0064</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_15_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0064</size></box></geometry>
+          <material><ambient>0.49387272818541794 0.49387272818541794 0.4790565463398554 1</ambient><diffuse>0.49387272818541794 0.49387272818541794 0.4790565463398554 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_0">
+        <pose>8.1500 -0.6500 0.0699 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0198</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0198</size></box></geometry>
+          <material><ambient>0.44673437798200694 0.44673437798200694 0.4333323466425467 1</ambient><diffuse>0.44673437798200694 0.44673437798200694 0.4333323466425467 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_1">
+        <pose>8.1500 -0.5500 0.0660 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0120</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0120</size></box></geometry>
+          <material><ambient>0.4448884732490981 0.4448884732490981 0.43154181905162514 1</ambient><diffuse>0.4448884732490981 0.4448884732490981 0.43154181905162514 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_2">
+        <pose>8.1500 -0.4500 0.0683 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          <material><ambient>0.5014584191470106 0.5014584191470106 0.4864146665726003 1</ambient><diffuse>0.5014584191470106 0.5014584191470106 0.4864146665726003 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_3">
+        <pose>8.1500 -0.3500 0.0656 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0111</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0111</size></box></geometry>
+          <material><ambient>0.44700789093111687 0.44700789093111687 0.43359765420318336 1</ambient><diffuse>0.44700789093111687 0.44700789093111687 0.43359765420318336 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_4">
+        <pose>8.1500 -0.2500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          <material><ambient>0.5070638310284081 0.5070638310284081 0.49185191609755585 1</ambient><diffuse>0.5070638310284081 0.5070638310284081 0.49185191609755585 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_5">
+        <pose>8.1500 -0.1500 0.0640 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0080</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0080</size></box></geometry>
+          <material><ambient>0.4873741506121767 0.4873741506121767 0.47275292609381137 1</ambient><diffuse>0.4873741506121767 0.4873741506121767 0.47275292609381137 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_6">
+        <pose>8.1500 -0.0500 0.0696 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          <material><ambient>0.44478323329793557 0.44478323329793557 0.4314397362989975 1</ambient><diffuse>0.44478323329793557 0.44478323329793557 0.4314397362989975 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_7">
+        <pose>8.1500 0.0500 0.0623 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0046</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0046</size></box></geometry>
+          <material><ambient>0.40756459551841007 0.40756459551841007 0.3953376576528578 1</ambient><diffuse>0.40756459551841007 0.40756459551841007 0.3953376576528578 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_8">
+        <pose>8.1500 0.1500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          <material><ambient>0.47805613049181017 0.47805613049181017 0.46371444657705585 1</ambient><diffuse>0.47805613049181017 0.47805613049181017 0.46371444657705585 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_9">
+        <pose>8.1500 0.2500 0.0696 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          <material><ambient>0.5066210416009097 0.5066210416009097 0.4914224103528824 1</ambient><diffuse>0.5066210416009097 0.5066210416009097 0.4914224103528824 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_10">
+        <pose>8.1500 0.3500 0.0624 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0048</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0048</size></box></geometry>
+          <material><ambient>0.400339706868888 0.400339706868888 0.3883295156628213 1</ambient><diffuse>0.400339706868888 0.400339706868888 0.3883295156628213 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_11">
+        <pose>8.1500 0.4500 0.0626 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0052</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0052</size></box></geometry>
+          <material><ambient>0.3999497194551326 0.3999497194551326 0.38795122787147857 1</ambient><diffuse>0.3999497194551326 0.3999497194551326 0.38795122787147857 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_16_12">
+        <pose>8.1500 0.5500 0.0670 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_16_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_16_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0141</size></box></geometry>
+          <material><ambient>0.5073752904376502 0.5073752904376502 0.49215403172452066 1</ambient><diffuse>0.5073752904376502 0.5073752904376502 0.49215403172452066 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_0">
+        <pose>8.2500 -0.6500 0.0690 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0180</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0180</size></box></geometry>
+          <material><ambient>0.4108012690183037 0.4108012690183037 0.3984772309477546 1</ambient><diffuse>0.4108012690183037 0.4108012690183037 0.3984772309477546 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_1">
+        <pose>8.2500 -0.5500 0.0687 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0173</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0173</size></box></geometry>
+          <material><ambient>0.4201466812887992 0.4201466812887992 0.40754228085013516 1</ambient><diffuse>0.4201466812887992 0.4201466812887992 0.40754228085013516 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_2">
+        <pose>8.2500 -0.4500 0.0642 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0085</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0085</size></box></geometry>
+          <material><ambient>0.4866349492059917 0.4866349492059917 0.47203590072981194 1</ambient><diffuse>0.4866349492059917 0.4866349492059917 0.47203590072981194 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_5">
+        <pose>8.2500 -0.1500 0.0683 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0167</size></box></geometry>
+          <material><ambient>0.41668214206233684 0.41668214206233684 0.4041816778004667 1</ambient><diffuse>0.41668214206233684 0.41668214206233684 0.4041816778004667 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_6">
+        <pose>8.2500 -0.0500 0.0636 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0071</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0071</size></box></geometry>
+          <material><ambient>0.4628480073620008 0.4628480073620008 0.4489625671411408 1</ambient><diffuse>0.4628480073620008 0.4628480073620008 0.4489625671411408 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_7">
+        <pose>8.2500 0.0500 0.0668 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0135</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0135</size></box></geometry>
+          <material><ambient>0.37110139135048886 0.37110139135048886 0.3599683496099742 1</ambient><diffuse>0.37110139135048886 0.37110139135048886 0.3599683496099742 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_8">
+        <pose>8.2500 0.1500 0.0633 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0067</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0067</size></box></geometry>
+          <material><ambient>0.4397954146619745 0.4397954146619745 0.42660155222211527 1</ambient><diffuse>0.4397954146619745 0.4397954146619745 0.42660155222211527 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_9">
+        <pose>8.2500 0.2500 0.0649 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0097</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0097</size></box></geometry>
+          <material><ambient>0.40361540275133073 0.40361540275133073 0.3915069406687908 1</ambient><diffuse>0.40361540275133073 0.40361540275133073 0.3915069406687908 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_10">
+        <pose>8.2500 0.3500 0.0659 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0117</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0117</size></box></geometry>
+          <material><ambient>0.5228539687275684 0.5228539687275684 0.5071683496657413 1</ambient><diffuse>0.5228539687275684 0.5228539687275684 0.5071683496657413 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_17_11">
+        <pose>8.2500 0.4500 0.0639 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_17_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0078</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_17_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0078</size></box></geometry>
+          <material><ambient>0.45709704556323716 0.45709704556323716 0.44338413419634004 1</ambient><diffuse>0.45709704556323716 0.45709704556323716 0.44338413419634004 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_0">
+        <pose>8.3500 -0.6500 0.0627 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0055</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0055</size></box></geometry>
+          <material><ambient>0.47646928838796765 0.47646928838796765 0.4621752097363286 1</ambient><diffuse>0.47646928838796765 0.47646928838796765 0.4621752097363286 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_2">
+        <pose>8.3500 -0.4500 0.0689 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0177</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0177</size></box></geometry>
+          <material><ambient>0.5154019203793149 0.5154019203793149 0.4999398627679354 1</ambient><diffuse>0.5154019203793149 0.5154019203793149 0.4999398627679354 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_4">
+        <pose>8.3500 -0.2500 0.0694 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0188</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0188</size></box></geometry>
+          <material><ambient>0.42987574538997214 0.42987574538997214 0.416979473028273 1</ambient><diffuse>0.42987574538997214 0.42987574538997214 0.416979473028273 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_5">
+        <pose>8.3500 -0.1500 0.0677 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0154</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0154</size></box></geometry>
+          <material><ambient>0.49117173248578516 0.49117173248578516 0.47643658051121157 1</ambient><diffuse>0.49117173248578516 0.49117173248578516 0.47643658051121157 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_6">
+        <pose>8.3500 -0.0500 0.0630 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0059</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0059</size></box></geometry>
+          <material><ambient>0.4781419511675437 0.4781419511675437 0.4637976926325174 1</ambient><diffuse>0.4781419511675437 0.4781419511675437 0.4637976926325174 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_7">
+        <pose>8.3500 0.0500 0.0665 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0131</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0131</size></box></geometry>
+          <material><ambient>0.4989688000885848 0.4989688000885848 0.4839997360859272 1</ambient><diffuse>0.4989688000885848 0.4989688000885848 0.4839997360859272 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_8">
+        <pose>8.3500 0.1500 0.0627 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0053</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0053</size></box></geometry>
+          <material><ambient>0.49067035072380205 0.49067035072380205 0.475950240202088 1</ambient><diffuse>0.49067035072380205 0.49067035072380205 0.475950240202088 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_9">
+        <pose>8.3500 0.2500 0.0696 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_9_collision">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_9_visual">
+          <geometry><box><size>0.0980 0.0980 0.0192</size></box></geometry>
+          <material><ambient>0.4776520080161659 0.4776520080161659 0.46332244777568093 1</ambient><diffuse>0.4776520080161659 0.4776520080161659 0.46332244777568093 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_10">
+        <pose>8.3500 0.3500 0.0654 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0107</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0107</size></box></geometry>
+          <material><ambient>0.3881273682914762 0.3881273682914762 0.3764835472427319 1</ambient><diffuse>0.3881273682914762 0.3881273682914762 0.3764835472427319 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_11">
+        <pose>8.3500 0.4500 0.0649 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0099</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0099</size></box></geometry>
+          <material><ambient>0.42634524352493663 0.42634524352493663 0.4135548862191885 1</ambient><diffuse>0.42634524352493663 0.42634524352493663 0.4135548862191885 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_18_12">
+        <pose>8.3500 0.5500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_18_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_18_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0144</size></box></geometry>
+          <material><ambient>0.4785670146082568 0.4785670146082568 0.46421000417000907 1</ambient><diffuse>0.4785670146082568 0.4785670146082568 0.46421000417000907 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_0">
+        <pose>8.4500 -0.6500 0.0657 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_0_collision">
+          <geometry><box><size>0.0980 0.0980 0.0113</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_0_visual">
+          <geometry><box><size>0.0980 0.0980 0.0113</size></box></geometry>
+          <material><ambient>0.399116766030591 0.399116766030591 0.3871432630496732 1</ambient><diffuse>0.399116766030591 0.399116766030591 0.3871432630496732 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_1">
+        <pose>8.4500 -0.5500 0.0665 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_1_collision">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_1_visual">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          <material><ambient>0.47094151037876836 0.47094151037876836 0.45681326506740527 1</ambient><diffuse>0.47094151037876836 0.47094151037876836 0.45681326506740527 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_2">
+        <pose>8.4500 -0.4500 0.0618 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_2_collision">
+          <geometry><box><size>0.0980 0.0980 0.0036</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_2_visual">
+          <geometry><box><size>0.0980 0.0980 0.0036</size></box></geometry>
+          <material><ambient>0.5123870800971777 0.5123870800971777 0.49701546769426236 1</ambient><diffuse>0.5123870800971777 0.5123870800971777 0.49701546769426236 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_3">
+        <pose>8.4500 -0.3500 0.0666 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_3_collision">
+          <geometry><box><size>0.0980 0.0980 0.0131</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_3_visual">
+          <geometry><box><size>0.0980 0.0980 0.0131</size></box></geometry>
+          <material><ambient>0.389700931439657 0.389700931439657 0.3780099034964673 1</ambient><diffuse>0.389700931439657 0.389700931439657 0.3780099034964673 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_4">
+        <pose>8.4500 -0.2500 0.0693 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_4_collision">
+          <geometry><box><size>0.0980 0.0980 0.0186</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_4_visual">
+          <geometry><box><size>0.0980 0.0980 0.0186</size></box></geometry>
+          <material><ambient>0.39262148013211545 0.39262148013211545 0.380842835728152 1</ambient><diffuse>0.39262148013211545 0.39262148013211545 0.380842835728152 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_5">
+        <pose>8.4500 -0.1500 0.0633 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_5_collision">
+          <geometry><box><size>0.0980 0.0980 0.0066</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_5_visual">
+          <geometry><box><size>0.0980 0.0980 0.0066</size></box></geometry>
+          <material><ambient>0.48527637916754346 0.48527637916754346 0.4707180877925171 1</ambient><diffuse>0.48527637916754346 0.48527637916754346 0.4707180877925171 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_6">
+        <pose>8.4500 -0.0500 0.0660 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_6_collision">
+          <geometry><box><size>0.0980 0.0980 0.0119</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_6_visual">
+          <geometry><box><size>0.0980 0.0980 0.0119</size></box></geometry>
+          <material><ambient>0.4587878123528556 0.4587878123528556 0.4450241779822699 1</ambient><diffuse>0.4587878123528556 0.4587878123528556 0.4450241779822699 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_7">
+        <pose>8.4500 0.0500 0.0665 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_7_collision">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_7_visual">
+          <geometry><box><size>0.0980 0.0980 0.0129</size></box></geometry>
+          <material><ambient>0.44323261676117476 0.44323261676117476 0.4299356382583395 1</ambient><diffuse>0.44323261676117476 0.44323261676117476 0.4299356382583395 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_8">
+        <pose>8.4500 0.1500 0.0631 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_8_collision">
+          <geometry><box><size>0.0980 0.0980 0.0062</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_8_visual">
+          <geometry><box><size>0.0980 0.0980 0.0062</size></box></geometry>
+          <material><ambient>0.3982209965055789 0.3982209965055789 0.38627436661041153 1</ambient><diffuse>0.3982209965055789 0.3982209965055789 0.38627436661041153 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_10">
+        <pose>8.4500 0.3500 0.0672 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_10_collision">
+          <geometry><box><size>0.0980 0.0980 0.0143</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_10_visual">
+          <geometry><box><size>0.0980 0.0980 0.0143</size></box></geometry>
+          <material><ambient>0.490716870491183 0.490716870491183 0.4759953643764475 1</ambient><diffuse>0.490716870491183 0.490716870491183 0.4759953643764475 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_11">
+        <pose>8.4500 0.4500 0.0654 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_11_collision">
+          <geometry><box><size>0.0980 0.0980 0.0109</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_11_visual">
+          <geometry><box><size>0.0980 0.0980 0.0109</size></box></geometry>
+          <material><ambient>0.4883421938322237 0.4883421938322237 0.473691928017257 1</ambient><diffuse>0.4883421938322237 0.4883421938322237 0.473691928017257 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="paver_19_12">
+        <pose>8.4500 0.5500 0.0636 0.00000 0.00000 0.00000</pose>
+        <collision name="paver_19_12_collision">
+          <geometry><box><size>0.0980 0.0980 0.0072</size></box></geometry>
+          
+        </collision>
+        <visual name="paver_19_12_visual">
+          <geometry><box><size>0.0980 0.0980 0.0072</size></box></geometry>
+          <material><ambient>0.4125353709111728 0.4125353709111728 0.4001593097838376 1</ambient><diffuse>0.4125353709111728 0.4125353709111728 0.4001593097838376 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="road_paint">
+        <pose>10.0000 0.0000 0.0005 0.00000 0.00000 0.00000</pose>
+        <visual name="road_paint_visual">
+          <geometry><box><size>1.0000 2.0000 0.0010</size></box></geometry>
+          <material><ambient>0.25 0.25 0.27 1</ambient><diffuse>0.25 0.25 0.27 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="dock_ramp">
+        <pose>11.4833 0.0000 0.0897 0.00000 -0.13963 0.00000</pose>
+        <collision name="dock_ramp_collision">
+          <geometry><box><size>2.0000 1.4000 0.1000</size></box></geometry>
+          
+        </collision>
+        <visual name="dock_ramp_visual">
+          <geometry><box><size>2.0000 1.4000 0.1000</size></box></geometry>
+          <material><ambient>0.45 0.47 0.5 1</ambient><diffuse>0.45 0.47 0.5 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="dock">
+        <pose>13.4805 0.0000 0.1392 0.00000 0.00000 0.00000</pose>
+        <collision name="dock_collision">
+          <geometry><box><size>2.0000 2.0000 0.2783</size></box></geometry>
+          
+        </collision>
+        <visual name="dock_visual">
+          <geometry><box><size>2.0000 2.0000 0.2783</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="pallet_0">
+        <pose>-2.5000 0.8800 0.0700 0.00000 0.00000 0.00000</pose>
+        <collision name="pallet_0_collision">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          
+        </collision>
+        <visual name="pallet_0_visual">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          <material><ambient>0.6 0.45 0.25 1</ambient><diffuse>0.6 0.45 0.25 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="crate_0">
+        <pose>-2.5000 0.8800 0.3900 0.00000 0.00000 0.00000</pose>
+        <collision name="crate_0_collision">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          
+        </collision>
+        <visual name="crate_0_visual">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          <material><ambient>0.7 0.55 0.35 1</ambient><diffuse>0.7 0.55 0.35 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="pallet_1">
+        <pose>-1.0000 -0.8800 0.0700 0.00000 0.00000 0.00000</pose>
+        <collision name="pallet_1_collision">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          
+        </collision>
+        <visual name="pallet_1_visual">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          <material><ambient>0.6 0.45 0.25 1</ambient><diffuse>0.6 0.45 0.25 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="crate_1">
+        <pose>-1.0000 -0.8800 0.3900 0.00000 0.00000 0.00000</pose>
+        <collision name="crate_1_collision">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          
+        </collision>
+        <visual name="crate_1_visual">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          <material><ambient>0.7 0.55 0.35 1</ambient><diffuse>0.7 0.55 0.35 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="pallet_2">
+        <pose>2.5000 1.2000 0.0700 0.00000 0.00000 0.00000</pose>
+        <collision name="pallet_2_collision">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          
+        </collision>
+        <visual name="pallet_2_visual">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          <material><ambient>0.6 0.45 0.25 1</ambient><diffuse>0.6 0.45 0.25 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="crate_2">
+        <pose>2.5000 1.2000 0.3900 0.00000 0.00000 0.00000</pose>
+        <collision name="crate_2_collision">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          
+        </collision>
+        <visual name="crate_2_visual">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          <material><ambient>0.7 0.55 0.35 1</ambient><diffuse>0.7 0.55 0.35 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="pallet_3">
+        <pose>7.5000 -1.4000 0.0700 0.00000 0.00000 0.00000</pose>
+        <collision name="pallet_3_collision">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          
+        </collision>
+        <visual name="pallet_3_visual">
+          <geometry><box><size>1.2000 0.8000 0.1400</size></box></geometry>
+          <material><ambient>0.6 0.45 0.25 1</ambient><diffuse>0.6 0.45 0.25 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="crate_3">
+        <pose>7.5000 -1.4000 0.3900 0.00000 0.00000 0.00000</pose>
+        <collision name="crate_3_collision">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          
+        </collision>
+        <visual name="crate_3_visual">
+          <geometry><box><size>0.8000 0.6000 0.5000</size></box></geometry>
+          <material><ambient>0.7 0.55 0.35 1</ambient><diffuse>0.7 0.55 0.35 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

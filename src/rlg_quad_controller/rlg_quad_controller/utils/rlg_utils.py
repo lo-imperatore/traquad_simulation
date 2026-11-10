@@ -1,10 +1,7 @@
 import yaml
 import numpy as np
-from rl_games.torch_runner import Runner
 import copy
-from rl_games.common import env_configurations
 from types import SimpleNamespace
-from gym.spaces import Box
 
 import torch
 import numpy.core.multiarray
@@ -15,7 +12,15 @@ from torch.serialization import add_safe_globals
 def build_rlg_player(weights_path: str,
                     env_cfg_path: str,
                     agent_cfg_path: str,
-                    device: str = "cuda:0"):
+                    device: str = None):
+    # device=None: usa la GPU se disponibile, altrimenti la CPU
+    # rl-games / gym imported here: they are needed only by rl-games (.pth) policies
+    from rl_games.torch_runner import Runner
+    from rl_games.common import env_configurations
+    from gym.spaces import Box
+
+    if device is None:
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 
     # --- patch temporanea torch.load con safe globals ---
@@ -24,6 +29,8 @@ def build_rlg_player(weights_path: str,
 
     def patched_torch_load(f, *args, **kwargs):
         kwargs['weights_only'] = False
+        # checkpoint salvato su GPU: rimappa sul device scelto (es. CPU)
+        kwargs.setdefault('map_location', device)
         return original_torch_load(f, *args, **kwargs)
 
     torch.load = patched_torch_load
@@ -36,6 +43,7 @@ def build_rlg_player(weights_path: str,
 
         params = copy.deepcopy(agent_yaml["params"])
         params["config"]["env_config"] = env_yaml
+        params["config"]["device_name"] = device
 
         obs_dim = 41
         act_dim = 12
@@ -65,10 +73,86 @@ def build_rlg_player(weights_path: str,
         torch.load = original_torch_load
 
 
+class RslRlPlayer:
+    """
+    Actor di una policy RSL-RL (checkpoint model_*.pt di IsaacLab).
+    Espone la stessa interfaccia del player rl-games usata da run_inference
+    (attributo .device e metodo get_action), quindi i controller non cambiano.
+    """
+
+    ACTIVATIONS = {
+        'elu': torch.nn.ELU, 'relu': torch.nn.ReLU, 'selu': torch.nn.SELU,
+        'tanh': torch.nn.Tanh, 'sigmoid': torch.nn.Sigmoid, 'lrelu': torch.nn.LeakyReLU,
+    }
+
+    def __init__(self, weights_path: str, agent_cfg_path: str, device: str):
+        self.device = device
+
+        with open(agent_cfg_path) as f:
+            agent_yaml = yaml.load(f, Loader=yaml.Loader)
+        actor_cfg = agent_yaml['actor']
+        hidden_dims = actor_cfg['hidden_dims']
+        activation = self.ACTIVATIONS[actor_cfg['activation']]
+
+        ckpt = torch.load(weights_path, map_location=device, weights_only=False)
+        if 'actor_state_dict' not in ckpt:
+            raise RuntimeError(
+                f"{weights_path}: formato RSL-RL non supportato (chiavi: {list(ckpt.keys())})")
+        state = ckpt['actor_state_dict']
+
+        # dimensioni ricavate dai pesi: primo e ultimo layer lineare
+        obs_dim = state['mlp.0.weight'].shape[1]
+        act_dim = state[f'mlp.{2 * len(hidden_dims)}.weight'].shape[0]
+
+        layers, in_dim = [], obs_dim
+        for h in hidden_dims:
+            layers += [torch.nn.Linear(in_dim, h), activation()]
+            in_dim = h
+        layers.append(torch.nn.Linear(in_dim, act_dim))
+        self.mlp = torch.nn.Sequential(*layers)
+        self.mlp.load_state_dict({k[len('mlp.'):]: v for k, v in state.items() if k.startswith('mlp.')})
+        self.mlp.to(device).eval()
+
+        # normalizzazione empirica delle osservazioni (EmpiricalNormalization, eps=1e-2)
+        if actor_cfg.get('obs_normalization', False):
+            self.obs_mean = state['obs_normalizer._mean'].to(device)
+            self.obs_std = state['obs_normalizer._std'].to(device)
+        else:
+            self.obs_mean, self.obs_std = None, None
+
+        clip = agent_yaml.get('clip_actions')
+        self.clip_actions = float(clip) if clip is not None else None
+        self.obs_dim, self.act_dim = obs_dim, act_dim
+
+    @torch.no_grad()
+    def get_action(self, obs, is_deterministic=True):
+        # solo azione media: la policy è valutata in modo deterministico
+        if self.obs_mean is not None:
+            obs = (obs - self.obs_mean) / (self.obs_std + 1e-2)
+        action = self.mlp(obs)
+        if self.clip_actions is not None:
+            action = action.clamp(-self.clip_actions, self.clip_actions)
+        return action
+
+
+def build_player(weights_path: str,
+                 env_cfg_path: str,
+                 agent_cfg_path: str,
+                 device: str = None):
+    """Carica una policy rl-games (.pth) o RSL-RL (.pt), riconoscendo il formato dal checkpoint."""
+    if device is None:
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+    ckpt = torch.load(weights_path, map_location='cpu', weights_only=False)
+    if 'actor_state_dict' in ckpt:
+        return RslRlPlayer(weights_path, agent_cfg_path, device)
+    return build_rlg_player(weights_path, env_cfg_path, agent_cfg_path, device)
+
+
 
 
 def run_inference(player, observation, det=True):
-    obs_torch = torch.from_numpy(observation).to('cuda:0').float()
+    obs_torch = torch.from_numpy(observation).to(player.device).float()
     action = player.get_action(obs_torch, is_deterministic=det)
     return action.cpu().numpy()
 

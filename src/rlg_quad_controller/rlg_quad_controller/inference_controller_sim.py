@@ -8,19 +8,26 @@ import transforms3d as t3d
 
 from sensor_msgs.msg import Imu, JointState
 from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
 from pi3hat_moteus_int_msgs.msg import JointsCommand, JointsStates
 
 from .utils.torch_utils import quat_rotate_inverse_numpy
-from .utils.rlg_utils import build_rlg_player, run_inference
+from .utils.rlg_utils import build_player, run_inference
 from custom_interfaces.msg import WheelVelocityCommand 
 
 import time
 
 class InferenceController(Node):
     """
-    ROS2 node per eseguire inference con una policy rl‑games
+    ROS2 node per eseguire inference con una policy rl‑games o RSL-RL
     e pubblicare comandi articolari a rate fissa.
     """
+
+    # dimensione di ogni termine di osservazione supportato
+    OBS_TERM_DIMS = {
+        'base_lin_vel': 3, 'base_ang_vel': 3, 'projected_gravity': 3, 'velocity_commands': 3,
+        'joint_pos': 8, 'joint_vel': 12, 'actions': 12,
+    }
 
     def __init__(self):
         super().__init__('inference_controller')
@@ -36,6 +43,8 @@ class InferenceController(Node):
         self.declare_parameter('wheels_target_topic', '/wheels_vel_controller/wheels_velocity_cmd') # topic for wheels commands (wheels velocity controller)
         self.declare_parameter('cmd_vel_topic', '/cmd_vel')
         self.declare_parameter('imu_topic', '/mulinex/imu')
+        # velocità lineare della base (nel frame base), usata solo se la policy osserva base_lin_vel
+        self.declare_parameter('base_lin_vel_topic', '/mulinex/gt_odom')
         # nuovi parametri per scaling
         self.declare_parameter('angular_velocity_scale', 1.0)
         self.declare_parameter('cmd_vel_scale', 1.0)
@@ -56,15 +65,32 @@ class InferenceController(Node):
 
 
         # init vars
+        self.base_lin_vel = np.zeros((3,1))
         self.base_ang_vel = np.zeros((3,1))
         self.projected_gravity = np.zeros((3,1))
-        self.cmd_vel = np.array([0.5, 0, 0]).reshape((3,1)) #np.zeros((3,1))
+        self.cmd_vel = np.zeros((3,1))
 
         # --- Caricamento YAML di configurazione ---
         with open(self.env_cfg_path, 'r') as f:
             self.env_cfg = yaml.load(f, Loader=yaml.Loader)
         with open(self.agent_cfg_path, 'r') as f:
             self.agent_cfg = yaml.load(f, Loader=yaml.Loader)
+
+        # --- Termini di osservazione della policy (ordine e history presi da env.yaml) ---
+        # base_lin_vel è opzionale: si attiva solo se presente nelle osservazioni di training.
+        # history_length > 0: il termine contiene gli ultimi N valori, dal più vecchio al più nuovo
+        # (come il CircularBuffer di IsaacLab); la history di gruppo, se c'è, vale per tutti i termini.
+        policy_cfg = self.env_cfg['observations']['policy']
+        self.obs_terms = [k for k, v in policy_cfg.items() if isinstance(v, dict) and 'func' in v]
+        unknown = [t for t in self.obs_terms if t not in self.OBS_TERM_DIMS]
+        if unknown:
+            raise RuntimeError(f'Termini di osservazione non supportati: {unknown}')
+        group_hist = policy_cfg.get('history_length')
+        self.obs_hist = {t: max(1, (group_hist if group_hist is not None else policy_cfg[t].get('history_length')) or 1)
+                         for t in self.obs_terms}
+        self.obs_buffers = None   # riempiti alla prima inference, come al reset in IsaacLab
+        self.use_base_lin_vel = 'base_lin_vel' in self.obs_terms
+        self.base_lin_vel_received = False
 
         # --- Calcolo rate di inference ---
         dt = self.env_cfg['sim']['dt']
@@ -77,19 +103,23 @@ class InferenceController(Node):
         wheel_scale = self.env_cfg['actions']['joint_vel']['scale']
         self.action_scale = np.array([leg_scale]*8 + [wheel_scale]*4).reshape((12,1))
 
-        # --- Caricamento modello RL‑Games ---
-        self.get_logger().info(f"Loading rl‑games checkpoint: {self.model_path}")
-        self.player = build_rlg_player(
+        # --- Caricamento modello (rl-games o RSL-RL) ---
+        self.get_logger().info(f"Loading checkpoint: {self.model_path}")
+        self.player = build_player(
             weights_path   = self.model_path,
             env_cfg_path   = self.env_cfg_path,
             agent_cfg_path = self.agent_cfg_path,
-            device         = 'cuda:0'
         )
-        self.get_logger().info('Model successfully loaded.')
+        self.get_logger().info(f'Model successfully loaded ({type(self.player).__name__}).')
+        obs_dim = sum(self.OBS_TERM_DIMS[t] * self.obs_hist[t] for t in self.obs_terms)
+        self.get_logger().info(f'Observation: {obs_dim} values, history {self.obs_hist}')
+        if getattr(self.player, 'obs_dim', obs_dim) != obs_dim:
+            raise RuntimeError(f'La policy si aspetta {self.player.obs_dim} osservazioni, il nodo ne costruisce {obs_dim}')
 
         # --- Pubblicatori/Sottoscrittori ---
         if self.simulation:
-            self.joint_pub = self.create_publisher(JointState, self.joint_target_topic, 10)
+            # il PD controller di Gazebo (rbt_pd_cnt) si sottoscrive a JointsCommand
+            self.joint_pub = self.create_publisher(JointsCommand, self.joint_target_topic, 10)
             self.wheels_pub = self.create_publisher(WheelVelocityCommand, self.wheels_target_topic, 10)
 
             self.joint_sub = self.create_subscription(
@@ -119,6 +149,13 @@ class InferenceController(Node):
         if self.use_imu:
             self.imu_sub = self.create_subscription(Imu, imu_topic, self.imu_callback, 10) 
 
+        if self.use_base_lin_vel:
+            base_lin_vel_topic = self.get_parameter('base_lin_vel_topic').value
+            self.get_logger().info(f'Policy uses base_lin_vel, subscribing to {base_lin_vel_topic}')
+            self.odom_sub = self.create_subscription(
+                Odometry, base_lin_vel_topic, self.odom_callback, 10
+            )
+
         # --- Buffer di stato ---
         self.n_joints_tot = 12
         self.n_joints_pos = 8
@@ -138,14 +175,14 @@ class InferenceController(Node):
         self.joint_vel = {n:0.0 for n in self.joint_names_vel}  # 12 joints
         self.prev_action = np.zeros((self.n_joints_tot,1))
 
-        # --- Posa di default e warmup ---
-        hip  = np.deg2rad(120.0)
-        knee = np.deg2rad(60.0)
-        self.default_pose = np.array([
-            hip, -hip, -hip, hip,
-            -knee, knee, knee, -knee,
-            0,0,0,0
-        ])
+        # --- Posa di default (dal config di training IsaacLab) e warmup ---
+        # In IsaacLab le ruote si chiamano *_ANKLE, in Gazebo *_WHEEL_JNT
+        init_joint_pos = self.env_cfg['scene']['robot']['init_state']['joint_pos']
+        self.default_pose = np.array(
+            [init_joint_pos[n] for n in self.joint_names_pos] +
+            [init_joint_pos.get(n.replace('_WHEEL_JNT', '_ANKLE'), 0.0) for n in self.joint_names_vel[8:]]
+        )
+        self.get_logger().info(f'Default pose: {self.default_pose}')
         self._warmup_duration = 3.0
         self.start_time = self.get_clock().now()
 
@@ -189,6 +226,18 @@ class InferenceController(Node):
             self.base_quat, np.array([0, 0, -1]).reshape((3, 1))
         )
 
+    def odom_callback(self, msg: Odometry):
+        """
+        Update base linear velocity. Il twist di nav_msgs/Odometry è espresso nel
+        child_frame (base_link), come base_lin_vel in IsaacLab.
+        """
+        self.base_lin_vel = np.array([
+            msg.twist.twist.linear.x,
+            msg.twist.twist.linear.y,
+            msg.twist.twist.linear.z
+        ]).reshape((3, 1))
+        self.base_lin_vel_received = True
+
     def joint_state_callback(self, msg: JointState):
         """
         Update current joint positions and velocities.
@@ -230,15 +279,24 @@ class InferenceController(Node):
         # for name in self.wheels_names:
         #     self.joint_vel[name] = 0.0
 
-        obs = np.vstack([
-            self.base_ang_vel * self.angular_vel_scale,
-            self.projected_gravity,
-            self.cmd_vel * self.cmd_vel_scale,
-            # np.fromiter(self.joint_pos.values() - self.default_pose[0:8], dtype=float).reshape((self.n_joints_pos,1)), # 8
-            (np.array(list(self.joint_pos.values()) - self.default_pose[0:8])).reshape((self.n_joints_pos,1)), # 8   #np.zeros((8,1)),
-            np.fromiter(self.joint_vel.values(), dtype=float).reshape((self.n_joints_tot,1)), # 12
-            self.prev_action # 12
-        ]).reshape((1,-1))
+        # i modelli RSL-RL rough hanno anche base_lin_vel (in testa) e alcuni la history dei termini
+        if self.use_base_lin_vel and not self.base_lin_vel_received:
+            self.get_logger().warn('No base_lin_vel received yet, using zeros', throttle_duration_sec=2.0)
+        current = {
+            'base_lin_vel': self.base_lin_vel,
+            'base_ang_vel': self.base_ang_vel * self.angular_vel_scale,
+            'projected_gravity': self.projected_gravity,
+            'velocity_commands': self.cmd_vel * self.cmd_vel_scale,
+            'joint_pos': (np.array(list(self.joint_pos.values()) - self.default_pose[0:8])).reshape((self.n_joints_pos,1)), # 8
+            'joint_vel': np.fromiter(self.joint_vel.values(), dtype=float).reshape((self.n_joints_tot,1)), # 12
+            'actions': self.prev_action, # 12
+        }
+        if self.obs_buffers is None:
+            self.obs_buffers = {t: [current[t].flatten()] * self.obs_hist[t] for t in self.obs_terms}
+        else:
+            for t in self.obs_terms:
+                self.obs_buffers[t] = self.obs_buffers[t][1:] + [current[t].flatten()]
+        obs = np.concatenate([np.concatenate(self.obs_buffers[t]) for t in self.obs_terms]).reshape((1,-1))
         # self.get_logger().info(f"OSSERVAZIONE RL: {obs}")
 
 
@@ -274,22 +332,24 @@ class InferenceController(Node):
         elapsed = delta.nanoseconds * 1e-9
         if elapsed < self._warmup_duration:
             target = self.default_pose
+            # l'azione non viene applicata: come al reset in IsaacLab, last_action = 0
+            self.prev_action = np.zeros((self.n_joints_tot,1))
         else:
             target = action * self.action_scale.flatten() + self.default_pose
 
         # pubblicazione
         # Joints
-        if self.simulation:
-            msg = JointState()
-        else:
-            msg = JointsCommand()                              
-            msg.kp_scale = [1.0]*self.n_joints_pos
-            msg.kd_scale = [1.0]*self.n_joints_pos
+        msg = JointsCommand()
+        msg.kp_scale = [1.0]*self.n_joints_pos
+        msg.kd_scale = [1.0]*self.n_joints_pos
 
         msg.header.stamp = now.to_msg()
         msg.name = self.joint_names_pos
         msg.position = target[0:8].tolist()
-        #self.joint_pub.publish(msg)
+        # il PD controller usa velocity/effort come feed-forward
+        msg.velocity = [0.0]*self.n_joints_pos
+        msg.effort = [0.0]*self.n_joints_pos
+        self.joint_pub.publish(msg)
         # self.get_logger().info(f"Published target: {target}\n")
         # self.get_logger().info(f"Action: {action}\n")
         # Wheels

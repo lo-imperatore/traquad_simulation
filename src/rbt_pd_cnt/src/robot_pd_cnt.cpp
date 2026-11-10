@@ -205,11 +205,22 @@ namespace rbt_pd_cnt
         {
           //  RCLCPP_INFO(get_node()->get_logger(),"steady controll");
         }
+        else if((*joint_command)->position.size() != joint_.size())
+        {
+            RCLCPP_WARN_THROTTLE(
+                get_node()->get_logger(), *get_node()->get_clock(), 1000,
+                "command has %zu positions, expected %zu: ignored",
+                (*joint_command)->position.size(), joint_.size()
+            );
+        }
          else
         {
+            // velocity / effort are optional: missing ones default to zero
             jnt_cmd_.set__position((*joint_command)->position);
-            jnt_cmd_.set__velocity((*joint_command)->velocity);
-            jnt_cmd_.set__effort((*joint_command)->effort);
+            jnt_cmd_.set__velocity(
+                (*joint_command)->velocity.size() == joint_.size() ? (*joint_command)->velocity : zeros);
+            jnt_cmd_.set__effort(
+                (*joint_command)->effort.size() == joint_.size() ? (*joint_command)->effort : zeros);
             // RCLCPP_INFO(get_node()->get_logger(),"arrived new command");
         }
         // // comment if add effort command;

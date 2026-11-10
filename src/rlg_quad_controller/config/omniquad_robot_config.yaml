@@ -1,0 +1,32 @@
+# Parameters of inference_omniquad_robot (policy on the laptop -> real omniquad).
+# The key must match the node name in omniquad_robot_bridge.launch.py.
+# Launch arguments (dry_run, auto_start, gains, log_path) override these values.
+
+inference_omniquad_robot:
+  ros__parameters:
+    joint_state_topic: "/state_broadcaster/joints_state"
+    imu_topic: "/IMU_Broadcaster/imu"
+    cmd_topic: "/joint_controller/command"
+    cmd_vel_topic: "/cmd_vel"
+
+    # command order of the robot joint_controller (as getup_omni_1.py / bridge_node.py)
+    robot_joint_order: ["LF_HFE", "LF_KFE", "LH_HFE", "LH_KFE", "RF_HFE", "RF_KFE", "RH_HFE", "RH_KFE",
+                        "LF_WHEEL", "LH_WHEEL", "RF_WHEEL", "RH_WHEEL"]
+    # wheels in policy order LF, LH, RF, RH; robot velocity = sign * policy velocity
+    # (left wheels inverted as in bridge_node.py: check on the stand, see README)
+    robot_wheel_names: ["LF_WHEEL", "LH_WHEEL", "RF_WHEEL", "RH_WHEEL"]
+    wheel_signs: [-1.0, -1.0, 1.0, 1.0]
+
+    standup_time: 5.0        # s, measured pose -> default pose
+    max_leg_offset: 1.2      # rad, clamp of |target - default| (policy scale 0.75 * action)
+    max_wheel_vel: 20.0      # rad/s (policy scale 20)
+    max_tilt_deg: 45.0       # POLICY -> HOLD above this tilt
+    state_timeout: 0.1       # s, POLICY -> HOLD if joint states / IMU are older
+
+    # multiply the gains configured on the moteus (training: Kp 100 N m/rad, Kd 1, 5 N m)
+    leg_kp_scale: 1.0
+    leg_kd_scale: 1.0
+    wheel_kp_scale: 1.0
+    wheel_kd_scale: 1.0
+
+    status_period: 1.0
