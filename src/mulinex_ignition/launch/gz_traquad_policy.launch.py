@@ -19,6 +19,11 @@ def generate_launch_description():
         'roller_radius': '0.014',
         'wheel_effort': '0.694',   # IsaacLab wheels actuator effort_limit_sim
         'roller_friction': '0.175',  # IsaacLab roller joint dry friction (0.1 x 14/8)
+        'ankle_center': '0.1009',  # IsaacLab ankle limits: front -24.2 .. +35.8 deg, hind mirrored
+        'ankle_range': '0.5236',
+        'ankle_damping': '0.01',   # IsaacLab ankles actuator damping
+        'idler_sphere': 'false',     # sphere collider for the raised idler (cylinder-edge contacts stall in DART)
+        'track_nose': 'false',       # true for the Legs3+ policies (track box cut along the belt line, frictionless)
         'wheel_mu': '0.75',          # IsaacLab contact friction: robot mu 0.4-1.1 x terrain 1.0 (multiply)
         'spawn_z': '0.35',          # IsaacLab init_state.pos z = 0.29
         'headless': 'false',
@@ -28,7 +33,12 @@ def generate_launch_description():
                   ' roller_radius:=', LaunchConfiguration('roller_radius'),
                   ' wheel_effort:=', LaunchConfiguration('wheel_effort'),
                   ' roller_friction:=', LaunchConfiguration('roller_friction'),
+                  ' ankle_center:=', LaunchConfiguration('ankle_center'),
+                  ' ankle_range:=', LaunchConfiguration('ankle_range'),
+                  ' ankle_damping:=', LaunchConfiguration('ankle_damping'),
                   ' wheel_mu:=', LaunchConfiguration('wheel_mu'),
+                  ' track_nose:=', LaunchConfiguration('track_nose'),
+                  ' idler_sphere:=', LaunchConfiguration('idler_sphere'),
                   # spawn the legs in the default pose of the policy (as after a reset in IsaacLab): spawned at 0,
                   # the robot can land on its front legs before the PD controller starts and stay stuck there
                   ' LF_HFE:=1.47 LH_HFE:=-1.47 RF_HFE:=-1.47 RH_HFE:=1.47']

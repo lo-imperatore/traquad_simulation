@@ -81,8 +81,12 @@ class TraquadInference(Node):
         unknown = [t for t in self.terms if t not in self.TERM_DIMS]
         if unknown:
             raise RuntimeError(f'Unsupported observation terms: {unknown}')
-        if policy_cfg.get('history_length') or any(policy_cfg[t].get('history_length') for t in self.terms):
-            raise RuntimeError('Observation history is not supported by this node')
+        # history (IsaacLab CircularBuffer): each term holds its last N values, oldest first, after clip and scale;
+        # the group history_length, if set, applies to every term; the buffer starts filled with the first value
+        group_hist = policy_cfg.get('history_length')
+        self.term_hist = {t: max(1, (group_hist if group_hist is not None else policy_cfg[t].get('history_length')) or 1)
+                          for t in self.terms}
+        self.obs_buffers = None
         self.term_scale = {t: policy_cfg[t].get('scale') for t in self.terms}
         self.term_clip = {t: policy_cfg[t].get('clip') for t in self.terms}
         self.acc_clip = policy_cfg.get('base_lin_acc', {}).get('params', {}).get('clip', 30.0)
@@ -100,11 +104,12 @@ class TraquadInference(Node):
         # --- policy ---
         self.rate_hz = 1.0 / (self.env_cfg['sim']['dt'] * self.env_cfg['decimation'])
         self.player = build_player(g('model_path'), g('env_cfg_path'), g('agent_cfg_path'))
-        obs_dim = sum(self.TERM_DIMS[t] for t in self.terms)
+        obs_dim = sum(self.TERM_DIMS[t] * self.term_hist[t] for t in self.terms)
         if getattr(self.player, 'obs_dim', obs_dim) != obs_dim or getattr(self.player, 'act_dim', 8) != 8:
             raise RuntimeError(f'Policy expects {self.player.obs_dim} obs / {self.player.act_dim} actions, '
                                f'node builds {obs_dim} / 8')
-        self.get_logger().info(f'Loaded {g("model_path")}: obs {self.terms} ({obs_dim}), rate {self.rate_hz:.1f} Hz, '
+        self.get_logger().info(f'Loaded {g("model_path")}: obs {self.terms} ({obs_dim}), history {self.term_hist}, '
+                               f'rate {self.rate_hz:.1f} Hz, '
                                f'default HFE {self.default_hfe}, leg scale {self.leg_scale}, '
                                f'track scale {self.track_scale}')
 
@@ -181,15 +186,20 @@ class TraquadInference(Node):
             'joint_vel': np.array([self.hfe_vel[n] for n in HFE_NAMES] + [self.wheel_vel[n] for n in WHEEL2_NAMES]),
             'actions': self.prev_action,
         }
-        parts = []
+        current = {}
         for t in self.terms:
             v = np.asarray(values[t], dtype=float)
             if self.term_clip[t] is not None:
                 v = np.clip(v, *self.term_clip[t])
             if self.term_scale[t] is not None:
                 v = v * self.term_scale[t]
-            parts.append(v)
-        return np.concatenate(parts).reshape(1, -1)
+            current[t] = v
+        if self.obs_buffers is None:
+            self.obs_buffers = {t: [current[t]] * self.term_hist[t] for t in self.terms}
+        else:
+            for t in self.terms:
+                self.obs_buffers[t] = self.obs_buffers[t][1:] + [current[t]]
+        return np.concatenate([np.concatenate(self.obs_buffers[t]) for t in self.terms]).reshape(1, -1)
 
     def step(self):
         now = self.get_clock().now()

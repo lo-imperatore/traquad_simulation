@@ -26,7 +26,7 @@ class InferenceController(Node):
     # dimensione di ogni termine di osservazione supportato
     OBS_TERM_DIMS = {
         'base_lin_vel': 3, 'base_ang_vel': 3, 'projected_gravity': 3, 'velocity_commands': 3,
-        'joint_pos': 8, 'joint_vel': 12, 'actions': 12,
+        'joint_pos': 8, 'joint_vel': 12, 'actions': 12, 'base_lin_acc': 3,
     }
 
     def __init__(self):
@@ -45,6 +45,10 @@ class InferenceController(Node):
         self.declare_parameter('imu_topic', '/mulinex/imu')
         # velocità lineare della base (nel frame base), usata solo se la policy osserva base_lin_vel
         self.declare_parameter('base_lin_vel_topic', '/mulinex/gt_odom')
+        # velocità sopra questo modulo [m/s] sono scartate (si tiene l'ultima valida), 0 = nessun filtro.
+        # gt_odom di Gazebo deriva la posa: ogni teleport (eval_scenarios.py) dà un picco di alcuni m/s
+        # e la policy reagisce male; anche uno stimatore reale può dare valori assurdi.
+        self.declare_parameter('max_base_lin_vel', 1.5)
         # nuovi parametri per scaling
         self.declare_parameter('angular_velocity_scale', 1.0)
         self.declare_parameter('cmd_vel_scale', 1.0)
@@ -69,6 +73,10 @@ class InferenceController(Node):
         self.base_ang_vel = np.zeros((3,1))
         self.projected_gravity = np.zeros((3,1))
         self.cmd_vel = np.zeros((3,1))
+        # accelerazione lineare IMU (forza specifica, +9.81 su z da fermo): campioni ricevuti dall'ultima inference,
+        # mediati come in IsaacLab (mdp.base_lin_acc: differenza di velocità sullo step di controllo)
+        self.lin_acc_samples = []
+        self.base_lin_acc = np.array([0.0, 0.0, 9.81]).reshape((3, 1))
 
         # --- Caricamento YAML di configurazione ---
         with open(self.env_cfg_path, 'r') as f:
@@ -90,6 +98,11 @@ class InferenceController(Node):
                          for t in self.obs_terms}
         self.obs_buffers = None   # riempiti alla prima inference, come al reset in IsaacLab
         self.use_base_lin_vel = 'base_lin_vel' in self.obs_terms
+        # base_lin_acc (mdp.base_lin_acc): clip e scala sono parametri del termine, applicati qui come in IsaacLab
+        self.use_base_lin_acc = 'base_lin_acc' in self.obs_terms
+        acc_params = (policy_cfg.get('base_lin_acc') or {}).get('params') or {}
+        self.lin_acc_clip = float(acc_params.get('clip', 30.0))
+        self.lin_acc_scale = float(acc_params.get('scale', 0.1))
         self.base_lin_vel_received = False
 
         # --- Calcolo rate di inference ---
@@ -209,6 +222,7 @@ class InferenceController(Node):
             msg.angular_velocity.y,
             msg.angular_velocity.z
         ]).reshape((3, 1))
+        self.lin_acc_samples.append([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
 
         quat = [
             msg.orientation.w,
@@ -231,11 +245,17 @@ class InferenceController(Node):
         Update base linear velocity. Il twist di nav_msgs/Odometry è espresso nel
         child_frame (base_link), come base_lin_vel in IsaacLab.
         """
-        self.base_lin_vel = np.array([
+        v = np.array([
             msg.twist.twist.linear.x,
             msg.twist.twist.linear.y,
             msg.twist.twist.linear.z
         ]).reshape((3, 1))
+        max_v = self.get_parameter('max_base_lin_vel').value
+        if max_v > 0 and np.linalg.norm(v) > max_v:
+            self.get_logger().warn(f'base_lin_vel {np.linalg.norm(v):.2f} m/s > {max_v} m/s scartata '
+                                   '(picco da teleport?), uso l\'ultima valida', throttle_duration_sec=1.0)
+            return
+        self.base_lin_vel = v
         self.base_lin_vel_received = True
 
     def joint_state_callback(self, msg: JointState):
@@ -282,7 +302,15 @@ class InferenceController(Node):
         # i modelli RSL-RL rough hanno anche base_lin_vel (in testa) e alcuni la history dei termini
         if self.use_base_lin_vel and not self.base_lin_vel_received:
             self.get_logger().warn('No base_lin_vel received yet, using zeros', throttle_duration_sec=2.0)
+        if self.use_base_lin_acc:
+            if self.lin_acc_samples:
+                self.base_lin_acc = np.mean(self.lin_acc_samples, axis=0).reshape((3, 1))
+                self.lin_acc_samples = []
+            else:
+                self.get_logger().warn('No IMU linear acceleration since the last step, reusing the last one',
+                                       throttle_duration_sec=2.0)
         current = {
+            'base_lin_acc': np.clip(self.base_lin_acc, -self.lin_acc_clip, self.lin_acc_clip) * self.lin_acc_scale,
             'base_lin_vel': self.base_lin_vel,
             'base_ang_vel': self.base_ang_vel * self.angular_vel_scale,
             'projected_gravity': self.projected_gravity,
@@ -334,6 +362,9 @@ class InferenceController(Node):
             target = self.default_pose
             # l'azione non viene applicata: come al reset in IsaacLab, last_action = 0
             self.prev_action = np.zeros((self.n_joints_tot,1))
+            # actor LSTM: lo stato nascosto parte da zero al primo step applicato, come al reset in IsaacLab
+            if hasattr(self.player, 'reset'):
+                self.player.reset()
         else:
             target = action * self.action_scale.flatten() + self.default_pose
 

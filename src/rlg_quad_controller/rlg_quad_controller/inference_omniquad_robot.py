@@ -4,7 +4,7 @@ Bridge between an IsaacLab omniquad policy running on the laptop and the real ro
 The node runs on the laptop, on the same ROS_DOMAIN_ID as the robot, and talks to the robot
 controllers over the network:
   in : /state_broadcaster/joints_state (pi3hat JointsStates)  legs + wheels position/velocity
-       /IMU_Broadcaster/imu            (sensor_msgs Imu)        orientation + angular velocity
+       /IMU_Broadcaster/imu            (sensor_msgs Imu)        orientation + angular velocity (+ linear acceleration for base_lin_acc policies)
        /cmd_vel                        (geometry_msgs Twist)    velocity command (teleop)
   out: /joint_controller/command      (pi3hat JointsCommand)   12 joints: legs position, wheels velocity
 
@@ -15,6 +15,8 @@ Phases (the robot always gets a command except in WAIT and with dry_run):
   POLICY  -> policy actions applied (scaled by leg/wheel_action_gain)
 Service ~/start: HOLD -> POLICY.  Service ~/stop: POLICY -> HOLD (default pose, wheels stopped).
 Fault (stale data, tilt, non-finite action) -> HOLD.
+base_lin_acc policies (lstm_acc, lstm_climb...): the IMU linear acceleration is checked once in HOLD (expected ~[0, 0, +9.81]
+m/s^2 at stand); ~/start is refused until it passes, auto_start does not apply.
 
 dry_run: True runs everything (phases included) without publishing anything.
 """
@@ -44,7 +46,7 @@ POLICY_WHEELS = ['LF', 'LH', 'RF', 'RH']   # IsaacLab *_ANKLE
 # Supported observation terms and their size
 OBS_TERM_DIMS = {
     'base_ang_vel': 3, 'projected_gravity': 3, 'velocity_commands': 3,
-    'joint_pos': 8, 'joint_vel': 12, 'actions': 12,
+    'joint_pos': 8, 'joint_vel': 12, 'actions': 12, 'base_lin_acc': 3,
 }
 
 
@@ -124,6 +126,15 @@ class OmniquadRobotBridge(Node):
         self.obs_hist = {t: max(1, (gh if gh is not None else pol[t].get('history_length')) or 1)
                          for t in self.obs_terms}
         self.obs_buffers = None
+        # base_lin_acc (mdp.base_lin_acc): specific force in the base frame (+9.81 on z when upright and still),
+        # mean of the IMU samples of the last control step, then clip and scale of the term as in IsaacLab
+        self.use_base_lin_acc = 'base_lin_acc' in self.obs_terms
+        acc_params = (pol.get('base_lin_acc') or {}).get('params') or {}
+        self.lin_acc_clip = float(acc_params.get('clip', 30.0))
+        self.lin_acc_scale = float(acc_params.get('scale', 0.1))
+        self.lin_acc_samples = []
+        self.base_lin_acc = np.array([0.0, 0.0, 9.81])
+        self.acc_checked = False
 
         self.player = build_player(g('model_path'), g('env_cfg_path'), g('agent_cfg_path'))
         obs_dim = sum(OBS_TERM_DIMS[t] * self.obs_hist[t] for t in self.obs_terms)
@@ -188,6 +199,10 @@ class OmniquadRobotBridge(Node):
         self.gravity = quat_rotate_inverse_numpy((q / n).reshape(4, 1),
                                                  np.array([0.0, 0.0, -1.0]).reshape(3, 1)).flatten()
         self.ang_vel = np.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
+        if self.use_base_lin_acc:
+            acc = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
+            if np.all(np.isfinite(acc)):
+                self.lin_acc_samples.append(acc)
         self.t_imu = time.monotonic()
 
     def cmd_vel_cb(self, msg: Twist):
@@ -196,6 +211,10 @@ class OmniquadRobotBridge(Node):
     def start_srv(self, req, res):
         if self.phase != HOLD:
             res.success, res.message = False, f'phase is {self.phase}, start only from HOLD'
+        elif self.use_base_lin_acc and getattr(self, 'acc_bad', False):
+            res.success, res.message = False, f'base_lin_acc check failed at stand: {np.round(self.base_lin_acc, 2)}'
+        elif self.use_base_lin_acc and not self.acc_checked:
+            res.success, res.message = False, 'base_lin_acc not checked yet (hold the default pose for 1 s)'
         else:
             self.set_phase(POLICY)
             res.success, res.message = True, 'policy active'
@@ -237,6 +256,14 @@ class OmniquadRobotBridge(Node):
             'joint_vel': np.concatenate([self.leg_vel, self.wheel_vel]),
             'actions': self.prev_action,
         }
+        if self.use_base_lin_acc:
+            if self.lin_acc_samples:
+                self.base_lin_acc = np.mean(self.lin_acc_samples, axis=0)
+                self.lin_acc_samples = []
+            else:
+                self.get_logger().warn('base_lin_acc: no IMU sample since the last step', throttle_duration_sec=2.0)
+            self.check_acc()
+            current['base_lin_acc'] = np.clip(self.base_lin_acc, -self.lin_acc_clip, self.lin_acc_clip) * self.lin_acc_scale
         if self.obs_buffers is None:   # as at the reset in IsaacLab: history filled with the first obs
             self.obs_buffers = {t: [current[t]] * self.obs_hist[t] for t in self.obs_terms}
         else:
@@ -244,6 +271,20 @@ class OmniquadRobotBridge(Node):
                 self.obs_buffers[t] = self.obs_buffers[t][1:] + [current[t]]
         frame = np.concatenate([current[t] for t in self.obs_terms])
         return np.concatenate([np.concatenate(self.obs_buffers[t]) for t in self.obs_terms])[None, :], frame
+
+    def check_acc(self):
+        """Once, while holding the default pose: the policy expects the specific force (gravity included, +z up,
+        m/s^2). A negative z, missing gravity or g units would feed it a wrong signal -> refuse to start."""
+        if self.acc_checked or self.phase != HOLD or time.monotonic() - self.phase_t0 < 1.0:
+            return
+        self.acc_checked = True
+        a = self.base_lin_acc
+        if 8.0 < a[2] < 11.5 and np.linalg.norm(a[:2]) < 2.0:
+            self.get_logger().info(f'base_lin_acc check ok at stand: {np.round(a, 2)} m/s^2')
+        else:
+            self.acc_bad = True
+            self.get_logger().error(f'base_lin_acc at stand is {np.round(a, 2)}, expected ~[0, 0, +9.81] m/s^2 '
+                                    '(specific force, base frame): ~/start refused. Check the IMU frame/units.')
 
     def step(self):
         now = time.monotonic()
@@ -279,7 +320,9 @@ class OmniquadRobotBridge(Node):
             a = min(1.0, (now - self.phase_t0) / self.standup_time)
             legs = (1 - a) * self.standup_from + a * self.default_legs
             if a >= 1.0:
-                self.set_phase(POLICY if self.auto_start and not fault else HOLD, '(standup done)')
+                # with base_lin_acc the IMU check runs in HOLD first: auto_start does not apply, ~/start after the check
+                self.set_phase(POLICY if self.auto_start and not fault and not self.use_base_lin_acc else HOLD,
+                               '(standup done)')
         elif self.phase == HOLD:
             legs = self.default_legs.copy()
         else:   # POLICY
