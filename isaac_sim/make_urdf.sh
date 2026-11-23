@@ -7,7 +7,7 @@ set -e
 OUT=$(readlink -f "$1")
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 TRACK=$REPO/src/mulinex_description/urdf/track.xacro
-CONTAINER=${CONTAINER:-ros2_humble_simulator}
+CONTAINER=${CONTAINER:-traquad_ros2_humble}
 WS=/home/ros/docker_simulation_ws
 if [ -n "$2" ]; then cp "$TRACK" /tmp/track.xacro.bak; cp "$2" "$TRACK"; fi
 docker exec "$CONTAINER" bash -c "source /opt/ros/humble/setup.bash && cd $WS && source install/setup.bash && \
