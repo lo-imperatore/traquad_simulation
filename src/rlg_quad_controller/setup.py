@@ -53,6 +53,7 @@ setup(
             'inference_controller_sim = rlg_quad_controller.inference_controller_sim:main',
             'inference_traquad_sim = rlg_quad_controller.inference_traquad_sim:main',
             'inference_omniquad_robot = rlg_quad_controller.inference_omniquad_robot:main',
+            'getup_omniquad_sim = rlg_quad_controller.getup_omniquad_sim:main',
 
             'force_measure = rlg_quad_controller.force_measure:main',
             'trajectory_publisher = rlg_quad_controller.trajectory_publisher:main'

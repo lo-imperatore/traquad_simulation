@@ -197,7 +197,7 @@ Su un nuovo terminale, lancerai i nodi dal tuo PC per controllare il robot:
 
 ## TROUBLESHOOT
 - If ``` colcon build ``` does not work the first time you launch it during the installation, try to do: 
-    - ``` docker rm -f ros2_humble_simulator``` 
+    - ``` docker rm -f traquad_ros2_humble``` 
     - ``` docker compose up -d``` 
     - and then, again: ``` docker compose exec ros2_humble_sim bash```
 - PROBLEMI INTERCORSI NEL PASSAGGIO GAZEBO --> ROS2:
@@ -214,9 +214,12 @@ Su un nuovo terminale, lancerai i nodi dal tuo PC per controllare il robot:
 ## REAL ROBOT: OMNIQUAD POLICY FROM THE LAPTOP
 `inference_omniquad_robot` runs the policy on the laptop and drives the robot over the network, through the robot controllers (`state_broadcaster`, `joint_controller`, `IMU_Broadcaster`, as `getup_omni_1.py`):
 in `/state_broadcaster/joints_state` (`JointsStates`), `/IMU_Broadcaster/imu`, `/cmd_vel`; out `/joint_controller/command` (`JointsCommand`, 12 joints: legs position, wheels velocity with position NaN).
+With `output_mode: omni_controller` (default of the config, robot running `omni_controller` of CentroEPiaggio/omni_controller, domain 10, CycloneDDS): legs out on `/omni_controller/joints_reference`, wheels on `/omni_controller/direct_wheels_cmd`, a `/nuc_heartbeat` is published (the robot damps the legs if it stops for > 1 s; not published in dry run), and at STANDUP the node calls `set_wheel_mode(true)` and `activate_srv`. The IMU comes from `/imu_sensor/imu`: on the robot run `ros2 control load_controller --set-state active imu_sensor` (the launch does not spawn it). Joint states stay on `/state_broadcaster/joints_state`. From the laptop: container with host network (`compose.yaml`), then `source robot_env.sh` in the shell (`ROS_DOMAIN_ID=10`, `rmw_cyclonedds_cpp`; the compose default stays domain 1 / Fast DDS for the simulation, never run Gazebo in a shell with the robot environment). `acc_add_gravity: true` adds the gravity back to the Pi3Hat acceleration (it is reported without gravity).
 Topics, joint order, wheel signs, gains and safety limits are in `src/rlg_quad_controller/config/omniquad_robot_config.yaml`.
 
 Phases: `WAIT` (no command until joint states and IMU arrive) → `STANDUP` (measured pose → default pose in 5 s, wheels stopped) → `HOLD` (default pose, policy computed but not applied) → `POLICY` with `ros2 service call /inference_omniquad_robot/start std_srvs/srv/Trigger`; `.../stop` goes back to `HOLD`. Stale joint states/IMU (> 0.1 s), tilt > 45° or a non-finite action switch `POLICY` → `HOLD`. At Ctrl-C the last command is default pose + wheels stopped. A status (loop time, data age, gravity, joint errors, wheel speeds, action) is printed every second.
+
+Rest / stand / activation (replica of the transitions of `omni_controller`, `utils/getup.py`): `STANDUP` = HFE activation offset (`activation_hip_offset_deg` 7.5, `activation_time` 2 s, HFE moved opposite to the stand direction) then cosine interpolation to the policy default pose (`standup_time`); services `~/rest` (HOLD -> REST -> RESTED, cosine to `rest_pose`, default zeros, `rest_time`; `release_at_rest:=true` releases the torque) and `~/stand` (RESTED -> STANDUP -> HOLD). `pose_check_tol` (0.6 rad): before the first STANDUP the measured legs must be near `rest_pose` or the default pose, else the node stays in WAIT (joint zero / sign convention check: the stand pose of the omni_controller yaml, HFE -0.56 / KFE 1.8 for LF, has the opposite signs of the policy default pose, HFE 2.0 / KFE -1.2: verify the zero of the real robot before the first stand). Same sequence in Gazebo: `ros2 launch mulinex_ignition gz_omniquad_sim.launch.py start_pose:=rest control_cfg_file_name:=omniquad_rest_mf.yaml`, then `ros2 launch rlg_quad_controller getup_omniquad_sim.launch.py` and `ros2 service call /getup_omniquad_sim/stand std_srvs/srv/Trigger` (`.../rest` to go back). Note: from the all-zero rest pose the simulated legs (5 N m) lift the body only to HFE 0.35 rad: use a folded rest pose in simulation (`rest_pose`).
 
 Network: laptop and robot on the same network, same `ROS_DOMAIN_ID` (compose.yaml sets 1: export the robot one) and `RMW_IMPLEMENTATION`; check with `ros2 topic hz /state_broadcaster/joints_state` from the laptop before starting.
 

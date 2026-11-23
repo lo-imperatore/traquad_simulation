@@ -6,14 +6,23 @@ controllers over the network:
   in : /state_broadcaster/joints_state (pi3hat JointsStates)  legs + wheels position/velocity
        /IMU_Broadcaster/imu            (sensor_msgs Imu)        orientation + angular velocity (+ linear acceleration for base_lin_acc policies)
        /cmd_vel                        (geometry_msgs Twist)    velocity command (teleop)
-  out: /joint_controller/command      (pi3hat JointsCommand)   12 joints: legs position, wheels velocity
+  out: output_mode 'joint_controller': /joint_controller/command (JointsCommand) 12 joints: legs position, wheels velocity
+       output_mode 'omni_controller' (omni_controller of CentroEPiaggio, default of the config):
+         /omni_controller/joints_reference  (JointsCommand)  legs: position, kp/kd scale
+         /omni_controller/direct_wheels_cmd (JointsCommand)  wheels: velocity, kp/kd scale
+         /nuc_heartbeat                     (Empty)          watchdog: the robot damps the legs if it stops for > 1 s
+         services /omni_controller/set_wheel_mode (data: true = direct) and activate_srv are called at the STANDUP
 
 Phases (the robot always gets a command except in WAIT and with dry_run):
   WAIT    -> no command until joint states and IMU are arriving
-  STANDUP -> interpolation from the measured pose to the policy default pose, wheels stopped
+  STANDUP -> as the omni_controller stand transition: HFE activation offset, then cosine interpolation from the measured
+             pose to the policy default pose (utils/getup.py), wheels stopped
   HOLD    -> default pose, wheels stopped; the policy runs in shadow (only logged)
   POLICY  -> policy actions applied (scaled by leg/wheel_action_gain)
+  REST    -> cosine interpolation to rest_pose (default all zeros, as q_rest of the omni_controller), wheels stopped
+  RESTED  -> holding rest_pose (torque released if release_at_rest)
 Service ~/start: HOLD -> POLICY.  Service ~/stop: POLICY -> HOLD (default pose, wheels stopped).
+Service ~/rest: HOLD -> REST -> RESTED.  Service ~/stand: RESTED -> STANDUP -> HOLD.
 Fault (stale data, tilt, non-finite action) -> HOLD.
 base_lin_acc policies (lstm_acc, lstm_climb...): the IMU linear acceleration is checked once in HOLD (expected ~[0, 0, +9.81]
 m/s^2 at stand); ~/start is refused until it passes, auto_start does not apply.
@@ -32,12 +41,14 @@ from rclpy.node import Node
 from rclpy.signals import SignalHandlerOptions
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Imu
-from std_srvs.srv import Trigger
+from std_msgs.msg import Empty
+from std_srvs.srv import SetBool, Trigger
 
+from .utils.getup import rest_sequence, stand_sequence
 from .utils.rlg_utils import build_player, run_inference
 from .utils.torch_utils import quat_rotate_inverse_numpy
 
-WAIT, STANDUP, HOLD, POLICY = 'WAIT', 'STANDUP', 'HOLD', 'POLICY'
+WAIT, STANDUP, HOLD, POLICY, REST, RESTED = 'WAIT', 'STANDUP', 'HOLD', 'POLICY', 'REST', 'RESTED'
 
 # Order of the policy (IsaacLab articulation order), same as inference_controller_sim
 POLICY_LEGS = ['LF_HFE', 'LH_HFE', 'RF_HFE', 'RH_HFE', 'LF_KFE', 'LH_KFE', 'RF_KFE', 'RH_KFE']
@@ -63,6 +74,13 @@ class OmniquadRobotBridge(Node):
         p('imu_topic', '/IMU_Broadcaster/imu')
         p('cmd_topic', '/joint_controller/command')
         p('cmd_vel_topic', '/cmd_vel')
+        p('output_mode', 'joint_controller')   # or 'omni_controller'
+        p('omni_ns', '/omni_controller')
+        p('heartbeat_topic', '/nuc_heartbeat')
+        p('heartbeat_hz', 20.0)
+        # The Pi3Hat reports the linear acceleration without gravity (~0 when level). The policy (base_lin_acc) expects
+        # the specific force (+9.81 on z when level): true -> acc = acc_reported - 9.81 * projected_gravity.
+        p('acc_add_gravity', False)
         # Command order of the robot controller (as getup_omni_1 / bridge_node): keep it, the
         # controller may match the joints by index and not by name.
         p('robot_joint_order', ['LF_HFE', 'LF_KFE', 'LH_HFE', 'LH_KFE', 'RF_HFE', 'RF_KFE',
@@ -73,7 +91,21 @@ class OmniquadRobotBridge(Node):
         p('wheel_signs', [-1.0, -1.0, 1.0, 1.0])
         p('dry_run', True)
         p('auto_start', False)               # go to POLICY right after STANDUP
-        p('standup_time', 5.0)               # s
+        p('standup_time', 5.0)               # s, stand transition (cosine) to the default pose
+        p('activation_hip_offset_deg', 7.5)  # deg, HFE offset of the activation, before the stand (0 disables)
+        p('activation_time', 2.0)            # s
+        p('rest_time', 5.0)                  # s, rest transition
+        p('rest_pose', [0.0] * 8)            # rad, POLICY_LEGS order (LF_HFE, LH_HFE, RF_HFE, RH_HFE, LF_KFE, ...)
+        # Joint zero check before the first STANDUP: the measured legs must be within this tolerance [rad, max over the
+        # joints] of rest_pose or of the policy default pose, else the node stays in WAIT (wrong zero / convention would
+        # drive the legs the wrong way). 0 disables.
+        p('pose_check_tol', 0.6)
+        # Joint zero of the robot vs the policy: q_policy = q_robot + joint_zero_offset (POLICY_LEGS order). The policy
+        # frame has the stand pose HFE +-2.0 / KFE -+1.2; if the robot zero is the contracted pose (omni_controller
+        # q_rest = 0, q_stand LF_HFE -0.56 / LF_KFE 1.8) the offset is the contracted pose in the policy frame.
+        # Commands sent to the robot are q_policy - offset. rest_pose is in the policy frame.
+        p('joint_zero_offset', [0.0] * 8)
+        p('release_at_rest', False)          # true: kp_scale 0 at RESTED (legs limp, as INACTIVE of the omni_controller)
         p('leg_action_gain', 1.0)            # scale of the leg offset from the default pose
         p('wheel_action_gain', 1.0)          # scale of the wheel velocity (0 = legs only)
         p('max_leg_offset', 1.2)             # rad, clamp of |target - default|
@@ -91,6 +123,18 @@ class OmniquadRobotBridge(Node):
         self.dry_run = g('dry_run')
         self.auto_start = g('auto_start')
         self.standup_time = g('standup_time')
+        self.act_offset_deg = g('activation_hip_offset_deg')
+        self.act_time = g('activation_time')
+        self.rest_time = g('rest_time')
+        self.rest_pose = np.array(g('rest_pose'), dtype=float)
+        assert self.rest_pose.shape == (8,), 'rest_pose needs 8 values (POLICY_LEGS order)'
+        self.release_at_rest = g('release_at_rest')
+        self.pose_check_tol = g('pose_check_tol')
+        self.zero_offset = np.array(g('joint_zero_offset'), dtype=float)
+        assert self.zero_offset.shape == (8,), 'joint_zero_offset needs 8 values (POLICY_LEGS order)'
+        self.pose_ok = False
+        self.hfe_mask = np.array(['HFE' in n for n in POLICY_LEGS])
+        self.seq = None
         self.leg_gain = g('leg_action_gain')
         self.wheel_gain = g('wheel_action_gain')
         self.max_leg_offset = g('max_leg_offset')
@@ -98,6 +142,11 @@ class OmniquadRobotBridge(Node):
         self.min_gravity_z = -np.cos(np.deg2rad(g('max_tilt_deg')))
         self.state_timeout = g('state_timeout')
         self.log_path = g('log_path')
+        self.output_mode = g('output_mode')
+        self.acc_add_gravity = g('acc_add_gravity')
+        assert self.output_mode in ('joint_controller', 'omni_controller'), self.output_mode
+        self.omni_ns = g('omni_ns').rstrip('/')
+        self.omni_ready = False
         self.robot_order = list(g('robot_joint_order'))
         self.robot_wheels = list(g('robot_wheel_names'))
         self.wheel_signs = np.array(g('wheel_signs'), dtype=float)
@@ -169,19 +218,31 @@ class OmniquadRobotBridge(Node):
         self.create_subscription(JointsStates, g('joint_state_topic'), self.joint_cb, qos_profile_sensor_data)
         self.create_subscription(Imu, g('imu_topic'), self.imu_cb, qos_profile_sensor_data)
         self.create_subscription(Twist, g('cmd_vel_topic'), self.cmd_vel_cb, 10)
-        self.cmd_pub = self.create_publisher(JointsCommand, g('cmd_topic'), 10)
+        if self.output_mode == 'omni_controller':
+            self.legs_pub = self.create_publisher(JointsCommand, f'{self.omni_ns}/joints_reference', 10)
+            self.wheels_pub = self.create_publisher(JointsCommand, f'{self.omni_ns}/direct_wheels_cmd', 10)
+            self.hb_pub = self.create_publisher(Empty, g('heartbeat_topic'), qos_profile_sensor_data)
+            self.mode_cli = self.create_client(SetBool, f'{self.omni_ns}/set_wheel_mode')
+            self.act_cli = self.create_client(SetBool, f'{self.omni_ns}/activate_srv')
+            if not self.dry_run:   # in dry run no heartbeat: it would arm the robot watchdog, which damps the legs when we exit
+                self.create_timer(1.0 / g('heartbeat_hz'), lambda: self.hb_pub.publish(Empty()))
+        else:
+            self.cmd_pub = self.create_publisher(JointsCommand, g('cmd_topic'), 10)
         self.create_service(Trigger, '~/start', self.start_srv)
         self.create_service(Trigger, '~/stop', self.stop_srv)
+        self.create_service(Trigger, '~/rest', self.rest_srv)
+        self.create_service(Trigger, '~/stand', self.stand_srv)
         self.create_timer(self.dt, self.step)
         self.create_timer(g('status_period'), self.status)
         self.get_logger().warn('DRY RUN: nothing is published' if self.dry_run else
-                               f'LIVE: commands on {g("cmd_topic")}')
+                               (f'LIVE: commands on {self.omni_ns}/joints_reference + direct_wheels_cmd'
+                                if self.output_mode == 'omni_controller' else f'LIVE: commands on {g("cmd_topic")}'))
 
     # ------------------------------------------------------------------ callbacks
     def joint_cb(self, msg: JointsStates):
         idx = {n: i for i, n in enumerate(msg.name)}
         try:
-            self.leg_pos = np.array([msg.position[idx[n]] for n in POLICY_LEGS])
+            self.leg_pos = np.array([msg.position[idx[n]] for n in POLICY_LEGS]) + self.zero_offset
             self.leg_vel = np.array([msg.velocity[idx[n]] for n in POLICY_LEGS])
             self.wheel_vel = self.wheel_signs * np.array([msg.velocity[idx[n]] for n in self.robot_wheels])
         except (KeyError, IndexError):
@@ -200,7 +261,9 @@ class OmniquadRobotBridge(Node):
                                                  np.array([0.0, 0.0, -1.0]).reshape(3, 1)).flatten()
         self.ang_vel = np.array([msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z])
         if self.use_base_lin_acc:
-            acc = [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z]
+            acc = np.array([msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z])
+            if self.acc_add_gravity:
+                acc = acc - 9.81 * self.gravity
             if np.all(np.isfinite(acc)):
                 self.lin_acc_samples.append(acc)
         self.t_imu = time.monotonic()
@@ -226,6 +289,22 @@ class OmniquadRobotBridge(Node):
         res.success, res.message = True, f'phase {self.phase}'
         return res
 
+    def rest_srv(self, req, res):
+        if self.phase != HOLD:
+            res.success, res.message = False, f'phase is {self.phase}, rest only from HOLD (call ~/stop first)'
+        else:
+            self.set_phase(REST)
+            res.success, res.message = True, 'rest transition started'
+        return res
+
+    def stand_srv(self, req, res):
+        if self.phase != RESTED:
+            res.success, res.message = False, f'phase is {self.phase}, stand only from RESTED'
+        else:
+            self.set_phase(STANDUP)
+            res.success, res.message = True, 'stand transition started'
+        return res
+
     # ------------------------------------------------------------------ main loop
     def set_phase(self, phase, reason=''):
         if phase == self.phase:
@@ -235,6 +314,55 @@ class OmniquadRobotBridge(Node):
         self.prev_action = np.zeros(12)
         if phase == STANDUP:
             self.standup_from = self.leg_pos.copy()
+            self.seq = stand_sequence(self.leg_pos, self.default_legs, self.hfe_mask,
+                                      self.act_offset_deg, self.act_time, self.standup_time)
+            self.setup_omni()
+        elif phase == REST:
+            self.seq = rest_sequence(self.leg_pos, self.rest_pose, self.rest_time)
+        elif phase == POLICY:
+            # as at the reset in IsaacLab: LSTM state and observation history start clean at the first applied step
+            if hasattr(self.player, 'reset'):
+                self.player.reset()
+            self.obs_buffers = None
+
+    def setup_omni(self):
+        """omni_controller: first a reference = the measured pose (so the legs do not jump to its
+        initial command), then wheels in direct mode, then INACTIVE -> ACTIVE."""
+        if self.dry_run or self.output_mode != 'omni_controller' or self.omni_ready:
+            return
+        for _ in range(3):
+            self.publish(self.leg_pos, np.zeros(4), time.monotonic())
+        for cli in (self.mode_cli, self.act_cli):
+            if not cli.wait_for_service(timeout_sec=1.0):
+                self.get_logger().error(f'service {cli.srv_name} not available: robot controller not reachable?')
+                return
+
+        def activate(fut):
+            ok = fut.result() is not None and fut.result().success
+            self.get_logger().info(f'wheel mode direct: {fut.result()}')
+            if not ok:
+                self.get_logger().error('set_wheel_mode failed: wheels will not move')
+            req = SetBool.Request(data=True)
+            self.act_cli.call_async(req).add_done_callback(
+                lambda f: (self.get_logger().info(f'activate_srv: {f.result()}'),
+                           setattr(self, 'omni_ready', f.result() is not None and f.result().success)))
+        self.mode_cli.call_async(SetBool.Request(data=True)).add_done_callback(activate)
+
+    def check_start_pose(self):
+        """The measured legs must be near the rest pose or the policy default pose (joint zero / sign convention check)."""
+        if self.pose_check_tol <= 0 or self.pose_ok:
+            return True
+        d_rest = np.abs(self.leg_pos - self.rest_pose).max()
+        d_def = np.abs(self.leg_pos - self.default_legs).max()
+        if min(d_rest, d_def) <= self.pose_check_tol:
+            self.pose_ok = True
+            return True
+        self.get_logger().error(
+            f'start pose check FAILED: measured legs {np.round(self.leg_pos, 2)} are {d_rest:.2f} rad from rest_pose and '
+            f'{d_def:.2f} from the default pose (tol {self.pose_check_tol}). Wrong joint zero/sign convention? '
+            'Not standing up; move the robot to its rest pose or fix rest_pose / the zero offsets.',
+            throttle_duration_sec=2.0)
+        return False
 
     def check_fault(self, now):
         if self.t_joints is None or self.t_imu is None:
@@ -294,8 +422,9 @@ class OmniquadRobotBridge(Node):
 
         fault = self.check_fault(now)
         if self.phase == WAIT:
-            if not fault:
-                self.set_phase(STANDUP, '(data ok)')
+            if not fault and self.leg_pos is not None:
+                if self.check_start_pose():
+                    self.set_phase(STANDUP, '(data ok)')
             return
         if fault.split(' ')[:2] != self.fault.split(' ')[:2] and fault:   # log once per kind
             self.get_logger().error(f'FAULT: {fault}')
@@ -317,12 +446,17 @@ class OmniquadRobotBridge(Node):
 
         wheels = np.zeros(4)
         if self.phase == STANDUP:
-            a = min(1.0, (now - self.phase_t0) / self.standup_time)
-            legs = (1 - a) * self.standup_from + a * self.default_legs
-            if a >= 1.0:
+            legs, seg, done = self.seq.at(now - self.phase_t0)
+            if done:
                 # with base_lin_acc the IMU check runs in HOLD first: auto_start does not apply, ~/start after the check
                 self.set_phase(POLICY if self.auto_start and not fault and not self.use_base_lin_acc else HOLD,
                                '(standup done)')
+        elif self.phase == REST:
+            legs, seg, done = self.seq.at(now - self.phase_t0)
+            if done:
+                self.set_phase(RESTED, '(rest done)')
+        elif self.phase == RESTED:
+            legs = self.rest_pose.copy()
         elif self.phase == HOLD:
             legs = self.default_legs.copy()
         else:   # POLICY
@@ -344,8 +478,30 @@ class OmniquadRobotBridge(Node):
         """legs: target positions in POLICY_LEGS order, wheels: velocities in policy order and sign."""
         if self.dry_run:
             return
-        pos = dict(zip(POLICY_LEGS, legs))
+        pos = dict(zip(POLICY_LEGS, np.asarray(legs) - self.zero_offset))   # robot frame
         vel = dict(zip(self.robot_wheels, self.wheel_signs * wheels))
+        if self.output_mode == 'omni_controller':
+            stamp = self.get_clock().now().to_msg()
+            lm = JointsCommand()
+            lm.header.stamp = stamp
+            lm.name = list(POLICY_LEGS)
+            lm.position = [float(pos[n]) for n in lm.name]
+            lm.velocity = [0.0] * 8
+            lm.effort = [0.0] * 8
+            released = self.release_at_rest and self.phase == RESTED
+            lm.kp_scale = [0.0 if released else float(self.get_parameter('leg_kp_scale').value)] * 8
+            lm.kd_scale = [1.0 if released else float(self.get_parameter('leg_kd_scale').value)] * 8
+            self.legs_pub.publish(lm)
+            wm = JointsCommand()
+            wm.header.stamp = stamp
+            wm.name = list(self.robot_wheels)
+            wm.velocity = [float(vel[n]) for n in wm.name]
+            wm.position = [float('nan')] * 4
+            wm.effort = [0.0] * 4
+            wm.kp_scale = [float(self.get_parameter('wheel_kp_scale').value)] * 4
+            wm.kd_scale = [float(self.get_parameter('wheel_kd_scale').value)] * 4
+            self.wheels_pub.publish(wm)
+            return
         msg = JointsCommand()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.name = self.robot_order
