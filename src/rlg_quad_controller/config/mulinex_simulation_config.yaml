@@ -1,12 +1,16 @@
 # config.yaml
+# Parametri per inference_controller_sim (Gazebo). La chiave deve coincidere
+# con il nome del nodo assegnato nel launch file.
 
-inference_controller:
+inference_controller_sim:
   ros__parameters:
     joint_state_topic: "/Joint_Feedback"
-    joint_target_pos_topic: "/PD_control/command"
+    wheels_state_topic: "/Wheel_Feedback"
+    joint_target_topic: "/pd_controller/command"
+    wheels_target_topic: "/wheels_vel_controller/wheels_velocity_cmd"
     cmd_vel_topic: "/cmd_vel"
-    imu_topic: "/imu/data"
-    rate: 100 # Hz
+    imu_topic: "/mulinex/imu"
+    base_lin_vel_topic: "/mulinex/gt_odom"   # usato solo se la policy osserva base_lin_vel
     use_imu: True
-    use_sim_time: False
+    use_sim_time: True
     simulation: True

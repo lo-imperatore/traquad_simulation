@@ -44,6 +44,12 @@ def generate_launch_description():
     joystic_teleop = LaunchConfiguration("joystic_teleop")
     robot_namespace = LaunchConfiguration("robot_namespace")
     pub_tf_gt = LaunchConfiguration("pub_tf_gt")
+    spawn_x = LaunchConfiguration("spawn_x")
+    spawn_y = LaunchConfiguration("spawn_y")
+    spawn_z = LaunchConfiguration("spawn_z")
+    spawn_yaw = LaunchConfiguration("spawn_yaw")
+    xacro_args = LaunchConfiguration("xacro_args")
+    headless = LaunchConfiguration("headless")
     #define launch arguments
     gz_verbosity_arg = DeclareLaunchArgument(
                 "gz_verbosity",
@@ -108,6 +114,16 @@ def generate_launch_description():
                 description="Publish ground truth odometry tf, Pose and Path message for RViz2 visualization purpose",
             )
     
+    spawn_args = [
+        DeclareLaunchArgument("spawn_x", default_value="-2.0", description="Robot spawn x [m]"),
+        DeclareLaunchArgument("spawn_y", default_value="0.0", description="Robot spawn y [m]"),
+        DeclareLaunchArgument("spawn_z", default_value="1.0", description="Robot spawn z [m]"),
+        DeclareLaunchArgument("spawn_yaw", default_value="0.0", description="Robot spawn yaw [rad]"),
+        DeclareLaunchArgument("headless", default_value="false", description="Run the Gazebo server only (no GUI)"),
+        DeclareLaunchArgument("xacro_args", default_value="",
+                              description="Extra xacro args, e.g. 'roller_n:=3 roller_radius:=0.014 wheel_effort:=0.694'"),
+    ]
+
     # get installed folder path 
     package_share_path = FindPackageShare('mulinex_ignition')
     
@@ -157,6 +173,14 @@ def generate_launch_description():
             output='screen',
             additional_env=gz_env, # type: ignore
             shell=True,
+            condition=IfCondition(NotSubstitution(headless)),
+        )
+    sim_headless = ExecuteProcess(
+            cmd=[ exec , world_path,  '-r', '-s', '-v', gz_verbosity],
+            output='screen',
+            additional_env=gz_env, # type: ignore
+            shell=True,
+            condition=IfCondition(headless),
         )
     #define the bridge action
     bridge = Node(
@@ -183,7 +207,7 @@ def generate_launch_description():
             {"robot_description": Command(
                 ["xacro ", xacro_file_path,
                 " use_gazebo:=true yaml_file:=",
-                conf_file_path," lidar_3D:=",use_lidar_3D," robot_namespace:=",robot_namespace]
+                conf_file_path," lidar_3D:=",use_lidar_3D," robot_namespace:=",robot_namespace," ",xacro_args]
                 ),
              "frame_prefix": robot_namespace}
         ],
@@ -209,10 +233,10 @@ def generate_launch_description():
             "mulinex",
             "-topic",
             "robot_description",
-            "-z",
-            "1.0",
-            "-x",
-            "-2.0",
+            "-x", spawn_x,
+            "-y", spawn_y,
+            "-z", spawn_z,
+            "-Y", spawn_yaw,
             "--ros-args",
             "--log-level",
             log_level,
@@ -266,6 +290,8 @@ def generate_launch_description():
     # ld.add_action(joystic_teleop_arg)
     ld.add_action(robot_namespace_arg)
     ld.add_action(pub_tf_gt_arg)
+    for arg in spawn_args:
+        ld.add_action(arg)
 
     #det env variable to export custom models
     ld.add_action(
@@ -282,6 +308,7 @@ def generate_launch_description():
         ),
     # add action 
     ld.add_action(sim)
+    ld.add_action(sim_headless)
     ld.add_action(bridge)
     ld.add_action(robot_state_publisher_node)
     ld.add_action(spawn_entity)

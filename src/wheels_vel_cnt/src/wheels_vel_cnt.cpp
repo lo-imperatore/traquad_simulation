@@ -9,11 +9,22 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 
 CallbackReturn WheelsVelCnt::on_init()
 {
+  // Default: traquad track rollers (kept for backward compatibility)
+  auto_declare<std::vector<std::string>>("joints", wheel_names_);
   return CallbackReturn::SUCCESS;
 }
 
 CallbackReturn WheelsVelCnt::on_configure(const rclcpp_lifecycle::State &)
 {
+  // Joints are grouped in 4 equal blocks [LF, LH, RF, RH] -> (v_lf, v_lb, v_rf, v_rb)
+  auto joints = get_node()->get_parameter("joints").as_string_array();
+  if (joints.empty() || joints.size() % 4 != 0)
+  {
+    RCLCPP_ERROR(get_node()->get_logger(), "'joints' must contain a multiple of 4 joints, got %zu", joints.size());
+    return CallbackReturn::ERROR;
+  }
+  wheel_names_ = joints;
+
   cmd_sub_ = get_node()->create_subscription<custom_interfaces::msg::WheelVelocityCommand>(
     "~/wheels_velocity_cmd", 10,
     std::bind(&WheelsVelCnt::cmd_callback, this, std::placeholders::_1));
@@ -109,8 +120,9 @@ controller_interface::return_type WheelsVelCnt::update(const rclcpp::Time &, con
 
   // Applica i comandi
   std::lock_guard<std::mutex> lock(command_mutex_);
+  const size_t joints_per_group = wheel_names_.size() / 4;
   for (size_t i = 0; i < wheel_names_.size(); ++i)
-    command_interfaces_[i].set_value(last_command_[i/4]);
+    command_interfaces_[i].set_value(last_command_[i / joints_per_group]);
 
   return controller_interface::return_type::OK;
 }

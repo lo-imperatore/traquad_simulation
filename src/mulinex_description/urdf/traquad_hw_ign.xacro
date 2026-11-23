@@ -264,7 +264,13 @@
 
         <gazebo>
             <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
-                <parameters>$(find mulinex_ignition)/config/mulinex_mf.yaml</parameters>
+                <!-- controller config passed by the launch file (yaml_file), mulinex_mf.yaml by default -->
+                <xacro:if value="${yaml == ''}">
+                    <parameters>$(find mulinex_ignition)/config/mulinex_mf.yaml</parameters>
+                </xacro:if>
+                <xacro:unless value="${yaml == ''}">
+                    <parameters>${yaml}</parameters>
+                </xacro:unless>
             </plugin>
         </gazebo>
 

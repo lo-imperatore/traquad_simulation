@@ -2,6 +2,10 @@
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
+    <!-- leg joint velocity limit [rad/s]: IsaacLab policies are trained with velocity_limit_sim = 10 (enforced by
+         PhysX), which damps the fast target changes of the policy; 1000 = no limit -->
+    <xacro:arg name="leg_velocity_limit" default="1000"/>
+
     <xacro:property name="base_2_HAA_y" value="${81.0 * 0.001}" />
     <xacro:property name="base_2_HAA_x" value="${45.0 * 0.001}" />
 
@@ -331,7 +335,7 @@
             <child link="${jnt_pref}${prefix}_UPPER_LEG" />
             <origin xyz="${hip_to_upper_leg_xyz}" rpy="${hip_to_upper_leg_rpy}" />
             <axis xyz="${axis}" />
-            <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="1000" />
+            <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="$(arg leg_velocity_limit)" />
             <!-- <dynamics damping="0.7" friction="100.0" /> -->
         </joint>
         <!-- Upper leg link -->
@@ -518,7 +522,7 @@
                 <child link="${jnt_pref}${prefix}_LOWER_LEG" />
                 <origin xyz="${upper_to_lower_leg_xyz}" rpy="${upper_to_lower_leg_rpy}" />
                 <axis xyz="${axis}" />
-                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="1000" />
+                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="$(arg leg_velocity_limit)" />
                 <!-- <dynamics damping="0.7" friction="100.0" /> -->
             </joint>
             <!-- Lower leg link -->
@@ -787,7 +791,7 @@
                 <child link="${jnt_pref}${prefix}_LOWER_LEG" />
                 <origin xyz="${upper_to_lower_leg_xyz}" rpy="${upper_to_lower_leg_rpy}" />
                 <axis xyz="${axis}" />
-                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="1000" />
+                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="$(arg leg_velocity_limit)" />
                 <!-- <dynamics damping="0.7" friction="100.0" /> -->
             </joint>
             <!-- Lower leg link -->
@@ -3161,7 +3165,7 @@
                 <child link="${jnt_pref}${prefix}_LOWER_LEG" />
                 <origin xyz="${upper_to_lower_leg_xyz}" rpy="${upper_to_lower_leg_rpy}" />
                 <axis xyz="${axis}" />
-                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="1000" />
+                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="$(arg leg_velocity_limit)" />
                 <!-- <dynamics damping="0.7" friction="100.0" /> -->
             </joint>
             <!-- Lower leg link -->
@@ -3607,7 +3611,7 @@
                 <child link="${jnt_pref}${prefix}_LOWER_LEG" />
                 <origin xyz="${upper_to_lower_leg_xyz}" rpy="${upper_to_lower_leg_rpy}" />
                 <axis xyz="${axis}" />
-                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="1000" />
+                <limit effort="5.0" lower="-${2*PI}" upper="${2*PI}" velocity="$(arg leg_velocity_limit)" />
                 <!-- <dynamics damping="0.7" friction="100.0" /> -->
             </joint>
             <!-- Lower leg link -->

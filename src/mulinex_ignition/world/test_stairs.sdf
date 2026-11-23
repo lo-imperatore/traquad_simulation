@@ -1,0 +1,312 @@
+<sdf version="1.6">
+  <world name="test_stairs">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-contact-system" name="gz::sim::systems::Contact"/>
+    <plugin name="rgl::RGLServerPluginManager" filename="RGLServerPluginManager">
+      <do_ignore_entities_in_lidar_link>true</do_ignore_entities_in_lidar_link>
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>1000</range><constant>0.9</constant><linear>0.01</linear><quadratic>0.001</quadratic></attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>200 200</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>200 200</size></plane></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lane_stairs_4cm">
+      <static>true</static>
+      <link name="stairs_4cm_0">
+        <pose>1.5000 0.0000 0.0200 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_4cm_0_collision">
+          <geometry><box><size>3.0000 1.6000 0.0400</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_4cm_0_visual">
+          <geometry><box><size>3.0000 1.6000 0.0400</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_4cm_1">
+        <pose>1.5000 0.0000 0.0400 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_4cm_1_collision">
+          <geometry><box><size>2.4000 1.6000 0.0800</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_4cm_1_visual">
+          <geometry><box><size>2.4000 1.6000 0.0800</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_4cm_2">
+        <pose>1.5000 0.0000 0.0600 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_4cm_2_collision">
+          <geometry><box><size>1.8000 1.6000 0.1200</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_4cm_2_visual">
+          <geometry><box><size>1.8000 1.6000 0.1200</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_4cm_3">
+        <pose>1.5000 0.0000 0.0800 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_4cm_3_collision">
+          <geometry><box><size>1.2000 1.6000 0.1600</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_4cm_3_visual">
+          <geometry><box><size>1.2000 1.6000 0.1600</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="start_0">
+        <pose>-0.3000 0.0000 0.0005 0.00000 0.00000 0.00000</pose>
+        <visual name="start_0_visual">
+          <geometry><box><size>0.0500 1.6000 0.0010</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lane_stairs_6cm">
+      <static>true</static>
+      <link name="stairs_6cm_0">
+        <pose>1.5000 3.0000 0.0300 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_6cm_0_collision">
+          <geometry><box><size>3.0000 1.6000 0.0600</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_6cm_0_visual">
+          <geometry><box><size>3.0000 1.6000 0.0600</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_6cm_1">
+        <pose>1.5000 3.0000 0.0600 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_6cm_1_collision">
+          <geometry><box><size>2.4000 1.6000 0.1200</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_6cm_1_visual">
+          <geometry><box><size>2.4000 1.6000 0.1200</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_6cm_2">
+        <pose>1.5000 3.0000 0.0900 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_6cm_2_collision">
+          <geometry><box><size>1.8000 1.6000 0.1800</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_6cm_2_visual">
+          <geometry><box><size>1.8000 1.6000 0.1800</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_6cm_3">
+        <pose>1.5000 3.0000 0.1200 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_6cm_3_collision">
+          <geometry><box><size>1.2000 1.6000 0.2400</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_6cm_3_visual">
+          <geometry><box><size>1.2000 1.6000 0.2400</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="start_1">
+        <pose>-0.3000 3.0000 0.0005 0.00000 0.00000 0.00000</pose>
+        <visual name="start_1_visual">
+          <geometry><box><size>0.0500 1.6000 0.0010</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lane_stairs_8cm">
+      <static>true</static>
+      <link name="stairs_8cm_0">
+        <pose>1.5000 6.0000 0.0400 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_8cm_0_collision">
+          <geometry><box><size>3.0000 1.6000 0.0800</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_8cm_0_visual">
+          <geometry><box><size>3.0000 1.6000 0.0800</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_8cm_1">
+        <pose>1.5000 6.0000 0.0800 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_8cm_1_collision">
+          <geometry><box><size>2.4000 1.6000 0.1600</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_8cm_1_visual">
+          <geometry><box><size>2.4000 1.6000 0.1600</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_8cm_2">
+        <pose>1.5000 6.0000 0.1200 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_8cm_2_collision">
+          <geometry><box><size>1.8000 1.6000 0.2400</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_8cm_2_visual">
+          <geometry><box><size>1.8000 1.6000 0.2400</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_8cm_3">
+        <pose>1.5000 6.0000 0.1600 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_8cm_3_collision">
+          <geometry><box><size>1.2000 1.6000 0.3200</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_8cm_3_visual">
+          <geometry><box><size>1.2000 1.6000 0.3200</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="start_2">
+        <pose>-0.3000 6.0000 0.0005 0.00000 0.00000 0.00000</pose>
+        <visual name="start_2_visual">
+          <geometry><box><size>0.0500 1.6000 0.0010</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lane_stairs_10cm">
+      <static>true</static>
+      <link name="stairs_10cm_0">
+        <pose>1.5000 9.0000 0.0500 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_10cm_0_collision">
+          <geometry><box><size>3.0000 1.6000 0.1000</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_10cm_0_visual">
+          <geometry><box><size>3.0000 1.6000 0.1000</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_10cm_1">
+        <pose>1.5000 9.0000 0.1000 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_10cm_1_collision">
+          <geometry><box><size>2.4000 1.6000 0.2000</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_10cm_1_visual">
+          <geometry><box><size>2.4000 1.6000 0.2000</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_10cm_2">
+        <pose>1.5000 9.0000 0.1500 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_10cm_2_collision">
+          <geometry><box><size>1.8000 1.6000 0.3000</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_10cm_2_visual">
+          <geometry><box><size>1.8000 1.6000 0.3000</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_10cm_3">
+        <pose>1.5000 9.0000 0.2000 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_10cm_3_collision">
+          <geometry><box><size>1.2000 1.6000 0.4000</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_10cm_3_visual">
+          <geometry><box><size>1.2000 1.6000 0.4000</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="start_3">
+        <pose>-0.3000 9.0000 0.0005 0.00000 0.00000 0.00000</pose>
+        <visual name="start_3_visual">
+          <geometry><box><size>0.0500 1.6000 0.0010</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lane_stairs_12cm">
+      <static>true</static>
+      <link name="stairs_12cm_0">
+        <pose>1.5000 12.0000 0.0600 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_12cm_0_collision">
+          <geometry><box><size>3.0000 1.6000 0.1200</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_12cm_0_visual">
+          <geometry><box><size>3.0000 1.6000 0.1200</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_12cm_1">
+        <pose>1.5000 12.0000 0.1200 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_12cm_1_collision">
+          <geometry><box><size>2.4000 1.6000 0.2400</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_12cm_1_visual">
+          <geometry><box><size>2.4000 1.6000 0.2400</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_12cm_2">
+        <pose>1.5000 12.0000 0.1800 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_12cm_2_collision">
+          <geometry><box><size>1.8000 1.6000 0.3600</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_12cm_2_visual">
+          <geometry><box><size>1.8000 1.6000 0.3600</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="stairs_12cm_3">
+        <pose>1.5000 12.0000 0.2400 0.00000 0.00000 0.00000</pose>
+        <collision name="stairs_12cm_3_collision">
+          <geometry><box><size>1.2000 1.6000 0.4800</size></box></geometry>
+          
+        </collision>
+        <visual name="stairs_12cm_3_visual">
+          <geometry><box><size>1.2000 1.6000 0.4800</size></box></geometry>
+          <material><ambient>0.55 0.55 0.53 1</ambient><diffuse>0.55 0.55 0.53 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+      <link name="start_4">
+        <pose>-0.3000 12.0000 0.0005 0.00000 0.00000 0.00000</pose>
+        <visual name="start_4_visual">
+          <geometry><box><size>0.0500 1.6000 0.0010</size></box></geometry>
+          <material><ambient>0.9 0.75 0.1 1</ambient><diffuse>0.9 0.75 0.1 1</diffuse><specular>0.1 0.1 0.1 1</specular></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

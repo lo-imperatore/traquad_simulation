@@ -11,7 +11,7 @@ services:
         - IMAGE_TAG=0.1
         - WORKSPACE=docker_simulation_ws
 
-    container_name: ros2_humble_simulator
+    container_name: traquad_ros2_humble
     # networks:
     #   - ros2_internal
     network_mode: "host"
@@ -25,8 +25,10 @@ services:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
       - XAUTHORITY=/tmp/.docker.xauth
-      - ROS_DOMAIN_ID=1
-      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      # default: simulation (isolated domain). Real robot: `source robot_env.sh` in the shell (domain 10, CycloneDDS),
+      # or start the container with ROS_DOMAIN_ID=10 RMW_IMPLEMENTATION=rmw_cyclonedds_cpp docker compose up -d
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-1}
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
       # Shell history
       - HISTFILE=/home/ros/.bash_history
       - HISTFILESIZE=10000

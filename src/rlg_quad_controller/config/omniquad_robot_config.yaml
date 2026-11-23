@@ -1,0 +1,52 @@
+# Parameters of inference_omniquad_robot (policy on the laptop -> real omniquad).
+# The key must match the node name in omniquad_robot_bridge.launch.py.
+# Launch arguments (dry_run, auto_start, gains, log_path) override these values.
+
+inference_omniquad_robot:
+  ros__parameters:
+    joint_state_topic: "/state_broadcaster/joints_state"
+    imu_topic: "/imu_sensor/imu"   # needs: ros2 control load_controller --set-state active imu_sensor (on the robot)
+    cmd_topic: "/joint_controller/command"
+    cmd_vel_topic: "/cmd_vel"
+
+    # output: 'omni_controller' = /omni_controller/joints_reference (legs) + direct_wheels_cmd (wheels)
+    #         + /nuc_heartbeat, activation through its services; 'joint_controller' = cmd_topic (old stack)
+    output_mode: "omni_controller"
+    omni_ns: "/omni_controller"
+    heartbeat_topic: "/nuc_heartbeat"
+    heartbeat_hz: 20.0
+
+    # Pi3Hat linear acceleration has no gravity (~0 when level): add it back (specific force, +9.81 on z when level)
+    acc_add_gravity: true
+
+    # command order of the robot joint_controller (as getup_omni_1.py / bridge_node.py)
+    robot_joint_order: ["LF_HFE", "LF_KFE", "LH_HFE", "LH_KFE", "RF_HFE", "RF_KFE", "RH_HFE", "RH_KFE",
+                        "LF_WHEEL", "LH_WHEEL", "RF_WHEEL", "RH_WHEEL"]
+    # wheels in policy order LF, LH, RF, RH; robot velocity = sign * policy velocity
+    # (left wheels inverted as in bridge_node.py: check on the stand, see README)
+    robot_wheel_names: ["LF_WHEEL", "LH_WHEEL", "RF_WHEEL", "RH_WHEEL"]
+    wheel_signs: [-1.0, -1.0, 1.0, 1.0]
+
+    # Joint zero: robot q = 0 is taken as the contracted pose (omni_controller q_rest 0; q_stand LF_HFE -0.56, LF_KFE 1.8).
+    # q_policy = q_robot + joint_zero_offset (POLICY_LEGS order: LF_HFE LH_HFE RF_HFE RH_HFE LF_KFE LH_KFE RF_KFE RH_KFE),
+    # offset = policy default - q_stand = contracted pose in the policy frame. UNVERIFIED on the hardware: read
+    # /state_broadcaster/joints_state with the legs contracted (must be ~0) and standing (LF_HFE ~ -0.56) before dry_run:=false.
+    # Robot with the old zero (policy angles directly, e.g. getup_omni_1 default 2.094/-1.047): set the offset to zeros
+    # and rest_pose to the folded pose in that frame. pose_check_tol refuses to stand up if the legs are not near rest_pose
+    # or the default pose.
+    joint_zero_offset: [2.56, -2.56, -2.56, 2.56, -3.0, 3.0, 3.0, -3.0]
+    rest_pose:         [2.56, -2.56, -2.56, 2.56, -3.0, 3.0, 3.0, -3.0]
+
+    standup_time: 5.0        # s, measured pose -> default pose
+    max_leg_offset: 1.2      # rad, clamp of |target - default| (policy scale 0.75 * action)
+    max_wheel_vel: 20.0      # rad/s (policy scale 20)
+    max_tilt_deg: 45.0       # POLICY -> HOLD above this tilt
+    state_timeout: 0.1       # s, POLICY -> HOLD if joint states / IMU are older
+
+    # multiply the gains configured on the moteus (training: Kp 100 N m/rad, Kd 1, 5 N m)
+    leg_kp_scale: 1.0
+    leg_kd_scale: 1.0
+    wheel_kp_scale: 1.0
+    wheel_kd_scale: 1.0
+
+    status_period: 1.0

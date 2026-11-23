@@ -17,8 +17,17 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Dati numerici generati
+# Dati numerici generati (anche i log del bridge sul robot reale)
 *.npy
+*.npz
+
+# Video dei test
+videos/
+
+# Policy: copiate a mano dai log di IsaacLab (vedi src/rlg_quad_controller/models/README.md)
+src/rlg_quad_controller/models/*
+!src/rlg_quad_controller/models/README.md
+src/rlg_quad_controller/old_models/
 
 # Script temporanei di Claude
 .claude_*
@@ -27,6 +36,7 @@ __pycache__/
 .vscode/
 *.swp
 *~
+.DS_Store
 nano.save
 /sed
 

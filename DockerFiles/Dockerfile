@@ -87,7 +87,13 @@ USER ${USERNAME}
 # ********************************************************
 
 # Install the python packages cosi non vengono installati da root
-# RUN pipx install numpy 
+# RUN pipx install numpy
+# Inference RL (rlg_quad_controller): torch CPU (basta per la policy MLP), rl-games, gym.
+# torch con --no-deps dall'indice CPU per evitare il download delle librerie CUDA; numpy<2 richiesto da gym.
+RUN python3 -m pip install --user --no-cache-dir --timeout 120 --retries 5 --no-deps torch --index-url https://download.pytorch.org/whl/cpu \
+    && python3 -m pip install --user --no-cache-dir --timeout 120 --retries 5 \
+       "sympy>=1.13.3" networkx filelock fsspec "typing-extensions>=4.10" jinja2 transforms3d "numpy<2" \
+       "rl-games==1.6.1" "gym==0.23.1"
 # install gazebo ignition
 # RUN sudo apt-get install -y  curl lsb-release gnupg
 # RUN sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpgecho "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null

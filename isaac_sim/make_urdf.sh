@@ -9,9 +9,12 @@ set -e
 OUT=$(readlink -f "$1")
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 TRACK=$REPO/src/mulinex_description/urdf/track.xacro
-CONTAINER=${CONTAINER:-ros2_humble_simulator}
+CONTAINER=${CONTAINER:-traquad_ros2_humble}
 WS=/home/ros/docker_simulation_ws
-XACRO_ARGS="$XACRO_EXTRA"
+# Isaac Sim asset values of the track xacro args (the Gazebo defaults of traquad.xacro differ): friction 0.6 measured
+# on the lab rubber mat, ankle end stops +-30 deg around the flat-track pose at HFE +-1.47, ankle damping 0.01,
+# bounding-box track body colliders. XACRO_EXTRA comes after and overrides them.
+XACRO_ARGS="wheel_mu:=0.6 ankle_center:=0.1008 ankle_range:=0.5236 ankle_damping:=0.01 body_box:=true $XACRO_EXTRA"
 if [ -n "$2" ]; then cp "$TRACK" /tmp/track.xacro.bak; cp "$2" "$TRACK"; fi
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$CONTAINER"; then
   docker exec "$CONTAINER" bash -c "source /opt/ros/humble/setup.bash && cd $WS && source install/setup.bash && \
